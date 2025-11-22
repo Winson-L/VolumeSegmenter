@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>WebGL Volume Renderer with UI Controls + Accumulation (voxel-space)</title>
+<style>
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #222;
+    color: white;
+    font-family: sans-serif;
+  }
+  #loading {
+    position: fixed;
+    top:0; left:0;
+    width: 100%; height: 100%;
+    background: #000;
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+  canvas {
+    width: 100%; height: 100%; display: block;
+  }
+  #ui {
+    position: fixed;
+    top: 10px; left: 10px;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 6px;
+    user-select: none;
+    z-index: 10;
+  }
+  #ui label { display:block; margin-bottom:8px; }
+  #ui input[type=range]{ width:150px; }
+  #resetBtn { margin-top:6px; display:block; }
+</style>
+</head>
+<body>
+<div id="loading">Loading volume data...</div>
+<canvas id="canvas"></canvas>
+
+<!-- UI 控制面板 -->
+<div id="ui">
+  <label id="fps">FPS: </label>
+  <label>ZoomZ: <input id="zoomSlider" type="range" min="-10" max="10" step="0.01" value="-2.0" /></label>
+  <label>Rotation X: <input id="rotXSlider" type="range" min="-180" max="180" step="1" value="0" /></label>
+  <label>Rotation Y: <input id="rotYSlider" type="range" min="-180" max="180" step="1" value="0" /></label>
+  <label>Rotation Z: <input id="rotZSlider" type="range" min="-180" max="180" step="1" value="0" /></label>
+  <label>Vol X: <input id="volXSlider" type="range" min="-20" max="20" step="0.01" value="0" /></label>
+  <label>Vol Y: <input id="volYSlider" type="range" min="-20" max="20" step="0.01" value="0" /></label>
+  <label>Vol Z: <input id="volZSlider" type="range" min="-20" max="20" step="0.01" value="0" /></label>
+
+  <button id="increaseZoom">Increase Zoom</button>
+  <label>Max Steps: <input id="stepsSlider" type="range" min="16" max="512" step="1" value="128" /></label>
+  <label>Step Size: <input id="stepSizeSlider" type="range" min="0.05" max="6.0" step="0.001" value="1.0" /></label>
+  <label>Max Bounces: <input id="bouncesSlider" type="range" min="1" max="8" step="1" value="5" /></label>
+  <label>Density Threshold Min: <input id="thresholdMinSlider" type="text" value="0.00" /></label>
+  <label>Density Threshold Max: <input id="thresholdMaxSlider" type="text" value="1.0" /></label>
+  <button id="resetBtn">Reset Accumulation</button>
+  <div id="info" style="font-size:12px;margin-top:6px;opacity:0.8;"></div>
+</div>
+
+<script type="module">
+/* ========= setup ========= */
+const canvas = document.getElementById("canvas");
+const gl = canvas.getContext("webgl2", {
+  powerPreference: "high-performance"
+});
+if(!gl) {
+  alert("WebGL2 not supported");
+  throw new Error("WebGL2 not supported");
+}
+const dpr = window.devicePixelRatio || 1;
+canvas.width = canvas.clientWidth * dpr;
+canvas.height = canvas.clientHeight * dpr;
+
+let frameCount = 0;
+let ext_timer_allow = true;
+let query = null;
+let startTime = 0.0;
+let endTime = 0.0;
+let accumulationToggle = 0;
+let accumulationTextures = [];
+let framebuffers = [];
+let ext_color_float = gl.getExtension('EXT_color_buffer_float');
+if (!ext_color_float) {
+  console.warn('EXT_color_buffer_float not available — floating point FBO may fail on some platforms.');
+}
+
+// get the extension
+const ext_timer = gl.getExtension("EXT_disjoint_timer_query_webgl2");
+if (!ext_timer) {
+  ext_timer_allow = false;
+  console.error("EXT_disjoint_timer_query_webgl2 not supported");
+}
+
+const infoDiv = document.getElementById('info');
+
+/* ========= shaders (vertex, volume fragment, display fragment) ========= */
+
+const vertexShaderSrc = `#version 300 es
+in vec2 aPosition;
+out vec2 vUV;
+void main() {
+  vUV = aPosition * 0.5 + 0.5;
+  gl_Position = vec4(aPosition, 0.0, 1.0);
+}
+`;
+
+// fragment shader updated to operate in voxel space using uVolumeDims
+const fragmentShaderSrc = `#version 300 es
+precision highp float;
+precision highp sampler3D;
+
+in vec2 vUV;
+out vec4 outColor;
+
+#define MAX_VOLUMES 15
+uniform sampler3D volumes[MAX_VOLUMES];
+uniform mat4 modelMatrices[MAX_VOLUMES];
+uniform vec3 volumeMin[MAX_VOLUMES];
+uniform vec3 volumeMax[MAX_VOLUMES];
+uniform int activeVolumeCount;
+
+uniform sampler2D uPrevFrame;
+uniform int uFrameCount;
+
+uniform mat4 uRotation;
+uniform vec2 uResolution;
+uniform float uZoomZ;
+uniform mat4 uVolumeRot;
+uniform vec3 uVolumePos;
+uniform int uMaxSteps;
+uniform float uStepSize;
+uniform int uMaxBounces;
+uniform vec3 uVolumeDims;
+uniform float uMinThreshold;
+uniform float uMaxThreshold;
+
+#define PI 3.14159265359
+#define MAX_STEPS 512
+#define MAX_BOUNCES 8
+#define EPSILON 0.0001
+#define GAMMA 2.2
+
+float rand(vec2 co) {
+  return fract(sin(dot(co, vec2(12.9898,78.233)) + float(uFrameCount) * 19.19) * 43758.5453);
+}
+
+vec3 uniformSampleSphere(vec2 xi) {
+  float z = 1.0 - 2.0 * xi.x;
+  float r = sqrt(max(0.0, 1.0 - z * z));
+  float phi = 2.0 * PI * xi.y;
+  return vec3(r * cos(phi), r * sin(phi), z);
+}
+
+vec3 getRayDir(vec2 fragCoord, vec2 resolution) {
+  vec2 uv = (fragCoord / resolution) * 2.0 - 1.0;
+  uv.y = -uv.y;
+  uv.x *= resolution.x / resolution.y;
+  return normalize(vec3(uv, 1.0));
+}
+
+bool intersectBox(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax, out float tMin, out float tMax) {
+  vec3 invDir = 1.0 / max(abs(rayDir), vec3(EPSILON)) * sign(rayDir);
+  vec3 t0s = (boxMin - rayOrigin) * invDir;
+  vec3 t1s = (boxMax - rayOrigin) * invDir;
+  vec3 tsmaller = min(t0s, t1s);
+  vec3 tbigger  = max(t0s, t1s);
+  tMin = max(max(tsmaller.x, tsmaller.y), tsmaller.z);
+  tMax = min(min(tbigger.x, tbigger.y), tbigger.z);
+  return tMax >= max(tMin, 0.0);
+}
+
+vec4 sampleVolume(int index, vec3 tex) {
+    if (index == 0) return texture(volumes[0], tex);
+    if (index == 1) return texture(volumes[1], tex);
+    if (index == 2) return texture(volumes[2], tex);
+    if (index == 3) return texture(volumes[3], tex);
+    return vec4(0.0);
+}
+
+vec3 transferFunction(float value) {
+    // Normalize to [0, 1]
+    float normalized = (value - uMinThreshold) / (uMaxThreshold - uMinThreshold);
+    normalized = clamp(normalized, 0.0, 1.0);
+
+    // Apply your rainbow-like color ramp
+    float r = clamp(1.5 - abs(4.0 * normalized - 3.0), 0.0, 1.0);
+    float g = clamp(1.5 - abs(4.0 * normalized - 2.0), 0.0, 1.0);
+    float b = clamp(1.5 - abs(4.0 * normalized - 1.0), 0.0, 1.0);
+
+    return vec3(r, g, b);
+}
+
+void main() {
+  vec2 fragCoord = gl_FragCoord.xy;
+  vec3 camPosN = vec3(0.0, 0.0, uZoomZ);
+  vec3 dirN = getRayDir(fragCoord, uResolution);
+
+  // 1. Define the volume's center in voxel-space as the pivot for rotation.
+  vec3 pivotV = uVolumeDims * 0.5;
+
+  // 2. Create a camera offset. We scale the zoom by the volume's largest
+  //    dimension to make the zoom speed feel consistent for any volume size.
+  float maxDim = max(uVolumeDims.x, max(uVolumeDims.y, uVolumeDims.z));
+  vec3 camOffset = vec3(0.0, 0.0, uZoomZ * maxDim * 2.0); // Multiplier for better distance
+
+  // 3. Rotate the camera offset vector around the origin.
+  vec3 rotatedOffset = (uRotation * vec4(camOffset, 0.0)).xyz;
+
+  // 4. The final ray origin is the pivot point plus the rotated offset.
+  //    This makes the camera orbit the pivot.
+  vec3 rayOriginV = pivotV + rotatedOffset;
+
+  // 5. The ray's direction is the rotated view direction.
+  vec3 rayDirV = normalize((uRotation * vec4(dirN, 0.0)).xyz);
+
+  // --- Transform Ray into Volume's Local Space ---
+  // vec3 pivotV is already defined above
+  mat4 uVolumeRotInverse = transpose(uVolumeRot); // Inverse of a rotation matrix is its transpose
+
+  // 1. Transform Ray Origin from World Space to Local Space
+  vec3 rayOriginLocal = rayOriginV - uVolumePos - pivotV;
+  rayOriginLocal = (uVolumeRotInverse * vec4(rayOriginLocal, 0.0)).xyz;
+  rayOriginLocal = rayOriginLocal + pivotV;
+
+  // 2. Transform Ray Direction from World Space to Local Space
+  vec3 rayDirLocal = normalize((uVolumeRotInverse * vec4(rayDirV, 0.0)).xyz);
+
+  // --- End Transform ---
+
+  vec3 accumColor = vec3(0.0);
+  float weight = 1.0;
+
+  // --- 1. 预计算所有 volume 的射线交点 ---
+  float tEnter[MAX_VOLUMES];
+  float tExit[MAX_VOLUMES];
+  mat4 invModels[MAX_VOLUMES];
+
+  for (int v = 0; v < activeVolumeCount; v++) {
+      mat4 invModel = transpose(modelMatrices[v]); // 假设只旋转平移，无缩放
+      invModels[v] = invModel;
+
+      vec3 rayOriginLocal = (invModel * vec4(rayOriginV, 1.0)).xyz;
+      vec3 rayDirLocal = normalize((invModel * vec4(rayDirV, 0.0)).xyz);
+
+      float tMin, tMax;
+      if (intersectBox(rayOriginLocal, rayDirLocal, volumeMin[v], volumeMax[v], tMin, tMax)) {
+          tEnter[v] = max(tMin, 0.0);
+          tExit[v] = tMax;
+      } else {
+          tEnter[v] = 1e9;
+          tExit[v] = -1e9;
+      }
+  }
+
+  // --- 2. 在统一的步长上遍历光线 ---
+  float t = 0.0;
+  float tMaxGlobal = 0.0;
+  for (int v = 0; v < activeVolumeCount; v++) {
+      tMaxGlobal = max(tMaxGlobal, tExit[v]);
+  }
+
+  for (int step = 0; step < uMaxSteps; step++) {
+      if (t > tMaxGlobal || weight < 0.01) break;
+
+      vec3 worldPos = rayOriginV + rayDirV * t;
+
+      float combinedDensity = 0.0;
+      vec3 combinedColor = vec3(0.0);
+
+      // 对所有 volume 同时采样
+      for (int v = 0; v < activeVolumeCount; v++) {
+          if (t < tEnter[v] || t > tExit[v]) continue;
+
+          mat4 invModel = invModels[v];
+          vec3 localPos = (invModel * vec4(worldPos, 1.0)).xyz;
+          vec3 tex = (localPos - volumeMin[v]) / (volumeMax[v] - volumeMin[v]);
+
+          // 检查采样是否在合法范围
+          if (any(lessThan(tex, vec3(0.0))) || any(greaterThan(tex, vec3(1.0)))) continue;
+
+          float d = sampleVolume(v, tex).r;
+          if (d > uMinThreshold && d < uMaxThreshold) {
+              combinedDensity += d;
+              combinedColor += transferFunction(d) * d;
+          }
+      }
+
+      // 如果当前步有有效密度，合并结果
+      if (combinedDensity > 0.0) {
+          combinedColor /= combinedDensity; // normalize color blend
+          float alpha = 1.0 - exp(-combinedDensity * uStepSize);
+          accumColor += weight * alpha * combinedColor;
+          weight *= (1.0 - alpha);
+      }
+
+      t += uStepSize;
+  }
+
+
+  accumColor = pow(accumColor, vec3(1.0 / GAMMA));
+  vec4 currentFrame = vec4(accumColor, 1.0 - weight);
+
+  vec4 prev = texture(uPrevFrame, vUV);
+  float f = float(uFrameCount);
+  float blend = 1.0 / (f + 1.0);
+  outColor = mix(prev, currentFrame, blend);
+}
+`;
+
+/* ========= helpers: compile/link ========= */
+function createShader(gl, type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s));
+    gl.deleteShader(s);
+    return null;
+  }
+  return s;
+}
+function createProgram(gl, vsSrc, fsSrc) {
+  const vs = createShader(gl, gl.VERTEX_SHADER, vsSrc);
+  const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSrc);
+  const p = gl.createProgram();
+  gl.attachShader(p, vs);
+  gl.attachShader(p, fs);
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+    console.error(gl.getProgramInfoLog(p));
+    gl.deleteProgram(p);
+    return null;
+  }
+  return p;
+}
+
+function makeRotationMatrixXYZ(rx, ry, rz) {
+  const cx = Math.cos(rx), sx = Math.sin(rx);
+  const cy = Math.cos(ry), sy = Math.sin(ry);
+  const cz = Math.cos(rz), sz = Math.sin(rz);
+
+  // Rx
+  const Rx = [
+    1, 0, 0, 0,
+    0, cx, sx, 0,
+    0, -sx, cx, 0,
+    0, 0, 0, 1
+  ];
+  // Ry
+  const Ry = [
+    cy, 0, -sy, 0,
+    0, 1, 0, 0,
+    sy, 0, cy, 0,
+    0, 0, 0, 1
+  ];
+  // Rz
+  const Rz = [
+    cz, sz, 0, 0,
+    -sz, cz, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  ];
+
+  function mul(A, B) {
+    const M = new Float32Array(16);
+    for (let r=0;r<4;r++){
+      for (let c=0;c<4;c++){
+        let sum = 0;
+        for (let k=0;k<4;k++){
+          sum += A[k*4 + r] * B[c*4 + k];
+        }
+        M[c*4 + r] = sum;
+      }
+    }
+    return M;
+  }
+
+  const RyRx = mul(Ry, Rx);
+  const R = mul(Rz, RyRx);
+  return R;
+}
+
+/* ========= create programs ========= */
+const program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc);
+if (!program ) throw new Error('Failed to compile shaders');
+
+/* ========= setup fullscreen VAO (shared) ========= */
+const quadVerts = new Float32Array([
+  -1, -1,  1, -1, -1, 1,
+  -1,  1,  1, -1,  1, 1
+]);
+const vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+const vbo = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+gl.bufferData(gl.ARRAY_BUFFER, quadVerts, gl.STATIC_DRAW);
+const posLoc = gl.getAttribLocation(program, "aPosition");
+gl.enableVertexAttribArray(posLoc);
+gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+gl.bindVertexArray(null);
+
+/* ========= accumulation textures + FBOs (ping-pong) ========= */
+for (let i = 0; i < 2; i++) {
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  // use RGBA16F (good balance)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, canvas.width, canvas.height, 0, gl.RGBA, gl.FLOAT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  accumulationTextures.push(tex);
+
+  const fb = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+
+  const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+  if (status !== gl.FRAMEBUFFER_COMPLETE) {
+    console.warn('Framebuffer not complete:', status);
+  }
+  framebuffers.push(fb);
+}
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+/* ========= uniforms locations ========= */
+const uRotationLoc = gl.getUniformLocation(program, "uRotation");
+const uResolutionLoc = gl.getUniformLocation(program, "uResolution");
+const uZoomZLoc = gl.getUniformLocation(program, "uZoomZ");
+const uVolumeRotLoc = gl.getUniformLocation(program, "uVolumeRot");
+const uVolumePosLoc = gl.getUniformLocation(program, "uVolumePos");
+const uVolumeLoc = gl.getUniformLocation(program, "volume");
+const uMaxStepsLoc = gl.getUniformLocation(program, "uMaxSteps");
+const uStepSizeLoc = gl.getUniformLocation(program, "uStepSize");
+const uMaxBouncesLoc = gl.getUniformLocation(program, "uMaxBounces");
+const uPrevFrameLoc = gl.getUniformLocation(program, "uPrevFrame");
+const uFrameCountLoc = gl.getUniformLocation(program, "uFrameCount");
+const uVolumeDimsLoc = gl.getUniformLocation(program, "uVolumeDims");
+const uMinThresholdLoc = gl.getUniformLocation(program, "uMinThreshold");
+const uMaxThresholdLoc = gl.getUniformLocation(program, "uMaxThreshold");
+
+
+// const uDisplayTextureLoc = gl.getUniformLocation(displayProgram, "uTexture");
+
+/* ========= initial uniform setup ========= */
+gl.useProgram(program);
+gl.uniform2f(uResolutionLoc, canvas.width, canvas.height);
+// gl.uniform1i(uVolumeLoc, 1);      // TEXTURE0 -> volume 3D
+
+// gl.useProgram(displayProgram);
+// gl.uniform1i(uDisplayTextureLoc, 0); // TEXTURE0 for displayProgram
+
+/* ========= dynamic UI / state ========= */
+let rotX = 0, rotY = 0;
+let dragging = false;
+let lastX = 0, lastY = 0;
+
+let volumePosition = [0, 0, 0];
+let volumeRotation = [0, 0, 0];
+
+const corners = [
+  [0,0,0], [1,0,0], [0,1,0], [0,0,1],
+  [1,1,0], [1,0,1], [0,1,1], [1,1,1]
+];
+
+
+const fpsTitle = document.getElementById("fps");
+const zoomSlider = document.getElementById("zoomSlider");
+
+const rotXSlider = document.getElementById("rotXSlider");
+const rotYSlider = document.getElementById("rotYSlider");
+const rotZSlider = document.getElementById("rotZSlider");
+const volXSlider = document.getElementById("volXSlider");
+const volYSlider = document.getElementById("volYSlider");
+const volZSlider = document.getElementById("volZSlider");
+
+
+const increaseZoomBtn = document.getElementById("increaseZoom");
+const stepsSlider = document.getElementById("stepsSlider");
+const stepSizeSlider = document.getElementById("stepSizeSlider");
+const bouncesSlider = document.getElementById("bouncesSlider");
+const resetBtn = document.getElementById("resetBtn");
+const thresholdMinSlider = document.getElementById("thresholdMinSlider");
+const thresholdMaxSlider = document.getElementById("thresholdMaxSlider");
+
+let zoomZ = parseFloat(zoomSlider.value);
+let maxSteps = parseInt(stepsSlider.value);
+let stepSize = parseFloat(stepSizeSlider.value);
+let maxBounces = parseInt(bouncesSlider.value);
+let densityMinThreshold = parseFloat(thresholdMinSlider.value);
+let densityMaxThreshold = parseFloat(thresholdMaxSlider.value);
+
+let volumeTextures = [];
+let volumeInfos = []; // 保存每个volume的位姿、尺寸等
+
+let volumeDims = [256,256,256]; // default, will be overwritten by loadVolumeXYZ
+
+// reset accumulation when camera or params change
+function resetAccumulation() {
+  frameCount = 0;
+  // clear accumulation textures to black (or zero)
+  for (let i = 0; i < 2; i++) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[i]);
+    gl.viewport(0,0,canvas.width,canvas.height);
+    gl.clearColor(0,0,0,0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  infoDiv.textContent = 'Accumulation reset';
+  setTimeout(()=> infoDiv.textContent = '', 1000);
+}
+function deg2rad(d) { return d * Math.PI / 180.0; }
+
+zoomSlider.oninput = e => { zoomZ = parseFloat(e.target.value); resetAccumulation(); };
+
+rotXSlider.oninput = e => { volumeRotation[0] = deg2rad(parseFloat(e.target.value)); resetAccumulation(); };
+rotYSlider.oninput = e => { volumeRotation[1] = deg2rad(parseFloat(e.target.value)); resetAccumulation(); };
+rotZSlider.oninput = e => { volumeRotation[2] = deg2rad(parseFloat(e.target.value)); resetAccumulation(); };
+volXSlider.oninput = e => { volumePosition[0] = parseFloat(e.target.value); resetAccumulation(); };
+volYSlider.oninput = e => { volumePosition[1] = parseFloat(e.target.value); resetAccumulation(); };
+volZSlider.oninput = e => { volumePosition[2] = parseFloat(e.target.value); resetAccumulation(); };
+
+stepsSlider.oninput = e => { maxSteps = parseInt(e.target.value); resetAccumulation(); };
+stepSizeSlider.oninput = e => { stepSize = parseFloat(e.target.value); resetAccumulation(); };
+bouncesSlider.oninput = e => { maxBounces = parseInt(e.target.value); resetAccumulation(); };
+thresholdMinSlider.oninput = e => { densityMinThreshold = parseFloat(e.target.value); resetAccumulation(); };
+thresholdMaxSlider.oninput = e => { densityMaxThreshold = parseFloat(e.target.value); resetAccumulation(); };
+
+resetBtn.onclick = () => resetAccumulation();
+increaseZoomBtn.onclick = () => {console.log(zoomSlider.value); zoomSlider.value = parseFloat(zoomSlider.value) + 0.01; zoomZ = parseFloat(zoomSlider.value); resetAccumulation();}
+
+canvas.addEventListener("mousedown", e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+canvas.addEventListener("mouseup", () => { dragging = false; resetAccumulation(); });
+canvas.addEventListener("mouseleave", () => { dragging = false; });
+canvas.addEventListener("mousemove", e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  rotY += dx * 0.01;
+  rotX += dy * 0.01;
+  lastX = e.clientX; lastY = e.clientY;
+  // reset accumulation because view changed
+  resetAccumulation();
+});
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  zoomZ += e.deltaY * 0.01;
+  zoomZ = Math.min(Math.max(zoomZ, -10.0), -0.1);
+  zoomSlider.value = zoomZ.toFixed(2);
+  resetAccumulation();
+});
+
+/* ========= load volume texture (your function) ========= */
+async function loadVolumeXYZ(url, sizeX, sizeY, sizeZ) {
+  const res = await fetch(url);
+  const arrayBuffer = await res.arrayBuffer();
+  let data = new Uint8Array(arrayBuffer);
+
+  const expectedLength = sizeX * sizeY * sizeZ;
+
+  if (data.length < expectedLength) {
+    console.warn(`Volume data is short! Expected ${expectedLength}, got ${data.length}`);
+    const padded = new Uint8Array(expectedLength);
+    padded.set(data); // Copy available data
+    data = padded;    // Use the padded version
+  } else if (data.length > expectedLength) {
+    console.warn(`Volume data is too large! Truncating from ${data.length} to ${expectedLength}`);
+    data = data.slice(0, expectedLength);
+  } else {
+    console.log(`Volume data size matches expected length: ${expectedLength}`);
+  }
+
+  const minVal = data.reduce((min, val) => Math.min(min, val), Infinity);
+  const maxVal = data.reduce((max, val) => Math.max(max, val), -Infinity);
+  document.getElementById("thresholdMinSlider").value = minVal / (maxVal - minVal);
+  document.getElementById("thresholdMaxSlider").value = maxVal / (maxVal - minVal);
+
+
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_3D, texture);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.R8, sizeX, sizeY, sizeZ, 0,
+                gl.RED, gl.UNSIGNED_BYTE, data);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  // set volumeDims and upload to shader
+  volumeDims = [sizeX, sizeY, sizeZ];
+  gl.useProgram(program);
+  gl.uniform3f(uVolumeDimsLoc, sizeX, sizeY, sizeZ);
+
+  return texture;
+}
+
+async function loadVolumeXYZU6(url, sizeX, sizeY, sizeZ) {
+  const res = await fetch(url);
+  const arrayBuffer = await res.arrayBuffer();
+  let data = new Uint16Array(arrayBuffer);
+
+  const expectedLength = sizeX * sizeY * sizeZ;
+
+  if (data.length < expectedLength) {
+    console.warn(`Volume data is short! Expected ${expectedLength}, got ${data.length}`);
+    const padded = new Uint16Array(expectedLength);
+    padded.set(data); // Copy available data
+    data = padded;    // Use the padded version
+  } else if (data.length > expectedLength) {
+    console.warn(`Volume data is too large! Truncating from ${data.length} to ${expectedLength}`);
+    data = data.slice(0, expectedLength);
+  } else {
+    console.log(`Volume data size matches expected length: ${expectedLength}`);
+  }
+
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_3D, texture);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16UI, sizeX, sizeY, sizeZ, 0,
+                gl.RED_INTEGER, gl.UNSIGNED_SHORT, data);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  // set volumeDims and upload to shader
+  volumeDims = [sizeX, sizeY, sizeZ];
+  gl.useProgram(program);
+  gl.uniform3f(uVolumeDimsLoc, sizeX, sizeY, sizeZ);
+
+  return texture;
+}
+
+/* ========= load and start ========= */
+let volumeTexture = null;
+
+let volumeTexture0 = null;
+let volumeTexture1 = null;
+let volumeTexture2 = null;
+let volumeTexture3 = null;
+let volumeTexture4 = null;
+let volumeTexture5 = null;
+let volumeTexture6 = null;
+let volumeTexture7 = null;
+
+async function main() {
+  // examples:
+  // volumeTexture = await loadVolumeXYZU6("christmas_tree_512x499x512_uint16.raw", 512, 499, 512);
+  // volumeTexture = await loadVolumeXYZ("csafe_heptane_302x302x302_uint8.raw", 302, 302, 302);
+  // volumeTexture = await loadVolumeXYZ("lobster_301x324x56_uint8.raw", 301, 324, 56);
+  // volumeTexture = await loadVolumeXYZ("marschner_lobb_41x41x41_uint8.raw", 41, 41, 41);
+  // volumeTexture = await loadVolumeXYZ("skull_256x256x256_uint8.raw", 256, 256, 256);
+  // volumeTexture = await loadVolumeXYZ("bonsai_256x256x256_uint8.raw", 256, 256, 256);
+
+  volumeTexture1 = await loadVolumeXYZ("./skull/component_1_128x124x128_0x0x0_0.0x0.0x0.0.raw", 128, 124, 128);
+  volumeTexture2 = await loadVolumeXYZ("./skull/component_2_98x128x74_0x0x0_0.0x0.0x0.0.raw", 98, 128, 74);
+  volumeTexture3 = await loadVolumeXYZ("./skull/component_3_94x66x128_68x124x0_0.0x0.0x0.0.raw", 94, 66, 128);
+  volumeTexture4 = await loadVolumeXYZ("./skull/component_4_84x92x78_88x0x100_0.0x0.0x0.0.raw", 84, 92, 78);
+  volumeTexture5 = await loadVolumeXYZ("./skull/component_5_92x114x78_72x0x0_0.0x0.0x0.0.raw", 92, 114, 78);
+  volumeTexture6 = await loadVolumeXYZ("./skull/component_6_70x72x94_0x0x68_0.0x0.0x0.0.raw", 70, 72, 94);
+  volumeTexture7 = await loadVolumeXYZ("./skull/component_7_78x72x86_0x112x84_0.0x0.0x0.0.raw",78, 72, 86);
+
+  volumeTextures.push(
+    // volumeTexture,
+    volumeTexture1,
+    volumeTexture2,
+    volumeTexture3,
+    volumeTexture4,
+    volumeTexture5,
+    volumeTexture6,
+    volumeTexture7,
+  );
+  volumeInfos = [
+    // { pos: [0, 0, 0], rot: [0, 0, 0], dims: [256, 256, 256] },
+
+    // POS = position in volume file name / -2
+    // Skull
+    { pos: [0, 0, 0], rot: [0, 0, 0], dims: [128, 124, 128] },
+    { pos: [0, 0, 0], rot: [0, 0, 0], dims: [98, 128, 74] },
+    { pos: [-32, -62, 0], rot: [0, 0, 0], dims: [94, 66, 128] },
+    { pos: [-44, 0,-50], rot: [0, 0, 0], dims: [84, 92, 78] },
+    { pos: [-36, 0, 0], rot: [0, 0, 0], dims: [92, 114, 78] },
+    { pos: [0, 0, -34], rot: [0, 0, 0], dims: [70, 72, 94] },
+    { pos: [0, -56, -42], rot: [0, 0, 0], dims: [78, 72, 86] },
+  ];
+
+  document.getElementById("loading").style.display = "none";
+  resetAccumulation();
+  requestAnimationFrame(render);
+}
+main();
+
+/* ========= rendering loop (accumulation + display) ========= */
+function getRotationMatrix(x, y) {
+  const cx = Math.cos(x), sx = Math.sin(x);
+  const cy = Math.cos(y), sy = Math.sin(y);
+  return new Float32Array([
+    cy, 0, -sy, 0,
+    sx*sy, cx, sx*cy, 0,
+    cx*sy, -sx, cx*cy, 0,
+    0,0,0,1
+  ]);
+}
+
+function render() {
+  if (ext_timer_allow) {
+    query = gl.createQuery();
+
+    // begin timer query
+    gl.beginQuery(ext_timer.TIME_ELAPSED_EXT, query);
+  }
+
+  // --- 1: render pathtraced volume into current accumulation FBO ---
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[accumulationToggle]);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0,0,0,1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  gl.useProgram(program);
+  gl.bindVertexArray(vao);
+
+  // disable blending because shader mixes prev frame internally
+  gl.disable(gl.BLEND);
+
+  // uniforms
+  const rotation = getRotationMatrix(rotX, rotY);
+  gl.uniformMatrix4fv(uRotationLoc, false, rotation);
+  gl.uniform2f(uResolutionLoc, canvas.width, canvas.height);
+  gl.uniform1f(uZoomZLoc, zoomZ);
+
+  // const volumeRotMat = makeRotationMatrixXYZ(volumeRotation[0], volumeRotation[1], volumeRotation[2]);
+  // gl.uniformMatrix4fv(uVolumeRotLoc, false, volumeRotMat);
+
+  for (let i = 0; i < volumeInfos.length; i++) {
+    const info = volumeInfos[i];
+    const rotM = makeRotationMatrixXYZ(...info.rot);
+    const model = new Float32Array(rotM);
+    model[3] = info.pos[0]; // 平移X
+    model[7] = info.pos[1]; // 平移Y
+    model[11] = info.pos[2]; // 平移Z
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, `modelMatrices[${i}]`), false, model);
+    gl.uniform3fv(gl.getUniformLocation(program, `volumeMin[${i}]`), [0,0,0]);
+    gl.uniform3fv(gl.getUniformLocation(program, `volumeMax[${i}]`), info.dims);
+  }
+
+  // convert normalized slider position to voxel units (so that move is visible)
+  const volPosVox = [
+    volumePosition[0] * volumeDims[0],
+    volumePosition[1] * volumeDims[1],
+    volumePosition[2] * volumeDims[2]
+  ];
+  gl.uniform3f(uVolumePosLoc, volPosVox[0], volPosVox[1], volPosVox[2]);
+  gl.uniform1i(uMaxStepsLoc, maxSteps);
+  gl.uniform1f(uStepSizeLoc, stepSize);
+  gl.uniform1i(uMaxBouncesLoc, maxBounces);
+  gl.uniform1i(uFrameCountLoc, frameCount);
+  gl.uniform3f(uVolumeDimsLoc, volumeDims[0], volumeDims[1], volumeDims[2]); // ensure up-to-date
+  gl.uniform1f(uMinThresholdLoc, densityMinThreshold);
+  gl.uniform1f(uMaxThresholdLoc, densityMaxThreshold);
+
+  // bind volume -> TEXTURE0
+  // gl.activeTexture(gl.TEXTURE0);
+  // gl.bindTexture(gl.TEXTURE_3D, volumeTexture);
+
+  for (let i = 0; i < volumeTextures.length; i++) {
+    gl.activeTexture(gl.TEXTURE0 + i);
+    gl.bindTexture(gl.TEXTURE_3D, volumeTextures[i]);
+  }
+  gl.uniform1iv(gl.getUniformLocation(program, "volumes"), 
+                Array.from({length: volumeTextures.length}, (_,i)=>i));
+  gl.uniform1i(gl.getUniformLocation(program, "activeVolumeCount"), volumeTextures.length);
+
+  // bind prev accumulation -> TEXTURE1
+  gl.activeTexture(gl.TEXTURE0 + volumeTextures.length + 1);
+  gl.bindTexture(gl.TEXTURE_2D, accumulationTextures[1 - accumulationToggle]);
+  gl.uniform1i(uPrevFrameLoc, volumeTextures.length + 1);   // TEXTURE1 -> prev accumulation
+
+  // draw to accumulation FBO
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+  // --- 2: blit/display current accumulation texture to default framebuffer ---
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+  // swap ping-pong
+  accumulationToggle = 1 - accumulationToggle;
+  frameCount++;
+
+  if (ext_timer_allow) {
+    // end timer query
+    gl.endQuery(ext_timer.TIME_ELAPSED_EXT);
+
+    // poll results
+    function checkQuery() {
+      const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
+      const disjoint = gl.getParameter(ext_timer.GPU_DISJOINT_EXT);
+
+      if (available && !disjoint) {
+        const timeElapsed = gl.getQueryParameter(query, gl.QUERY_RESULT);
+        // timeElapsed is in nanoseconds
+        console.log("GPU time (ms):", timeElapsed / 1e6);
+        if (frameCount % 30 == 0) {
+          fpsTitle.innerText = `FPS: ${1000 / (timeElapsed / 1e6)}`;
+        }
+        
+      } else {
+        // try again next frame
+        requestAnimationFrame(checkQuery);
+      }
+    }
+    checkQuery();
+  } else {
+    if (frameCount % 30 == 0) {
+      endTime = performance.now();
+      fpsTitle.innerText = `FPS: ${1000 / ((endTime - startTime) / 30)}`;
+      startTime = performance.now();
+    }
+  }
+  
+
+  requestAnimationFrame(render);
+}
+
+/* ========= end ========= */
+</script>
+</body>
+</html>
