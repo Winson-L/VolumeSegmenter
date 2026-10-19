@@ -1,0 +1,28 @@
+{
+  "input_volume": ".\\skull_256x256x256_uint8.raw",
+  "volume_shape": [
+    256,
+    256,
+    256
+  ],
+  "parameters": {
+    "spatial_weight": 0.5,
+    "intensity_weight": 0.5,
+    "downsample_factor": 4,
+    "kmeans_clusters": 8,
+    "background_threshold": 13.742143086989241,
+    "min_component_size": 1677
+  },
+  "components": [
+    "component_1_128x124x128_0x0x0_0.0x0.0x0.0.raw",
+    "component_2_98x128x74_0x0x0_0.0x0.0x0.0.raw",
+    "component_3_94x66x128_68x124x0_0.0x0.0x0.0.raw",
+    "component_4_84x92x78_88x0x100_0.0x0.0x0.0.raw",
+    "component_5_92x114x78_72x0x0_0.0x0.0x0.0.raw",
+    "component_6_70x72x94_0x0x68_0.0x0.0x0.0.raw",
+    "component_7_78x72x86_0x112x84_0.0x0.0x0.0.raw"
+  ],
+  "component_count": 7,
+  "total_size_mb": 5.8475189208984375,
+  "processing_time": 2.391589641571045
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "file": "skull_256x256x256_uint8.raw",
+    "bytes": 16777216,
+    "sha256": "3903c8fcb217edc141eed698e9c8c5afe4070f914e9c65687f2b6ca5e8e08b7d"
+  },
+  {
+    "file": "skull/component_1_128x124x128_0x0x0_0.0x0.0x0.0.raw",
+    "bytes": 2031616,
+    "sha256": "df6a5d8dbdd4f8ad6a894eeca840cd28422859dc26815269d46f8aa842e251de"
+  },
+  {
+    "file": "skull/component_2_98x128x74_0x0x0_0.0x0.0x0.0.raw",
+    "bytes": 928256,
+    "sha256": "1324181e15946b35b0e125940eb522577980f9c793493c22bd84f2cfffccf71d"
+  },
+  {
+    "file": "skull/component_3_94x66x128_68x124x0_0.0x0.0x0.0.raw",
+    "bytes": 794112,
+    "sha256": "a6e1b1d4b4c8d8f260c0b3b87b521e324b71e57a0b5248856142511131852ab5"
+  },
+  {
+    "file": "skull/component_4_84x92x78_88x0x100_0.0x0.0x0.0.raw",
+    "bytes": 602784,
+    "sha256": "02bbd77b627b3c82c8d9abbf6d872460639bb02c016fdb19d2cdf327c0ef5d75"
+  },
+  {
+    "file": "skull/component_5_92x114x78_72x0x0_0.0x0.0x0.0.raw",
+    "bytes": 818064,
+    "sha256": "9b27b18617e71b7def629ea3f12053aab59a49fd2727725bfbaf6c0b9c2fa8d7"
+  },
+  {
+    "file": "skull/component_6_70x72x94_0x0x68_0.0x0.0x0.0.raw",
+    "bytes": 473760,
+    "sha256": "235c4d93ff3abeb618287249b933df6f8777ac22e299a89a1234d0a6523ca1e9"
+  },
+  {
+    "file": "skull/component_7_78x72x86_0x112x84_0.0x0.0x0.0.raw",
+    "bytes": 482976,
+    "sha256": "4c00c81c979d6c0e735d5130c540bf1d951dd65b54704ff7961456a86cce4277"
+  }
+]

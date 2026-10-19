@@ -1,0 +1,23 @@
+{
+  "mode": "original",
+  "downsample": 1,
+  "visible": [
+    1
+  ],
+  "resolution": [
+    3420,
+    1812
+  ],
+  "camera": [
+    90,
+    0,
+    1.8
+  ],
+  "step": 1,
+  "cutoff": 60,
+  "gpu_median_ms": 15.706624000000001,
+  "gpu_valid_samples": 60,
+  "raf_and_finish_median_ms": 16.900000005960464,
+  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+  "renderer": "WebKit WebGL"
+}

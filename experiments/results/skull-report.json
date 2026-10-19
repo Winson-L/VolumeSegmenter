@@ -1,0 +1,89 @@
+{
+  "input_file": "skull_256x256x256_uint8.raw",
+  "input_sha256": "3903c8fcb217edc141eed698e9c8c5afe4070f914e9c65687f2b6ca5e8e08b7d",
+  "dimensions_xyz": [
+    256,
+    256,
+    256
+  ],
+  "original_bytes": 16777216,
+  "environment": {
+    "python": "3.13.7 (main, Aug 14 2025, 11:12:11) [Clang 17.0.0 (clang-1700.0.13.3)]",
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "numpy": "2.5.4",
+    "scikit_learn": "1.9.1"
+  },
+  "methodology": "Single run per variant, sequential. Processing includes file IO, hashing and extraction; excludes reconstruction and metrics. MiB = 1048576 bytes. Not network compression. No peak RAM claim.",
+  "results": [
+    {
+      "experiment": "original",
+      "output_bytes": 16777216,
+      "processing_seconds": 0.039239457983057946,
+      "retained_nonzero": 14834427,
+      "component_count": 1,
+      "reduction_percent": 0.0,
+      "threshold": 0.0,
+      "mae_vs_retained": 0.0,
+      "mae_vs_original": 0.0,
+      "retained_voxels_missing": 0,
+      "introduced_nonzero_voxels": 0,
+      "overlapping_nonzero_voxels": 0
+    },
+    {
+      "experiment": "crop",
+      "output_bytes": 16777216,
+      "processing_seconds": 0.24059245904209092,
+      "retained_nonzero": 7334883,
+      "component_count": 1,
+      "reduction_percent": 0.0,
+      "threshold": 13.621871,
+      "mae_vs_retained": 0.0,
+      "mae_vs_original": 3.8065133094787598,
+      "retained_voxels_missing": 0,
+      "introduced_nonzero_voxels": 0,
+      "overlapping_nonzero_voxels": 0
+    },
+    {
+      "experiment": "partition",
+      "output_bytes": 63920409,
+      "processing_seconds": 0.8957689160015434,
+      "retained_nonzero": 7334883,
+      "component_count": 8,
+      "reduction_percent": -280.9953272342682,
+      "threshold": 13.621871,
+      "mae_vs_retained": 0.0,
+      "mae_vs_original": 3.8065133094787598,
+      "retained_voxels_missing": 0,
+      "introduced_nonzero_voxels": 0,
+      "overlapping_nonzero_voxels": 0
+    },
+    {
+      "experiment": "lossy",
+      "output_bytes": 8022700,
+      "processing_seconds": 0.7781359999789856,
+      "retained_nonzero": 7334883,
+      "component_count": 8,
+      "reduction_percent": 52.18098163604736,
+      "threshold": 13.621871,
+      "mae_vs_retained": 4.399452209472656,
+      "mae_vs_original": 6.551342964172363,
+      "retained_voxels_missing": 1404051,
+      "introduced_nonzero_voxels": 1315962,
+      "overlapping_nonzero_voxels": 86450
+    },
+    {
+      "experiment": "decimated",
+      "output_bytes": 2097152,
+      "processing_seconds": 0.29628112498903647,
+      "retained_nonzero": 7334883,
+      "component_count": 1,
+      "reduction_percent": 87.5,
+      "threshold": 13.621871,
+      "mae_vs_retained": 4.242793083190918,
+      "mae_vs_original": 6.392329216003418,
+      "retained_voxels_missing": 1326794,
+      "introduced_nonzero_voxels": 1319247,
+      "overlapping_nonzero_voxels": 0
+    }
+  ]
+}

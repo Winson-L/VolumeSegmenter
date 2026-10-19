@@ -1,126 +1,135 @@
-# VolumeSegmenter: Intelligent 3D Volume Segmentation for WebGL Rendering
+# VolumeSegmenter
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue) ![License](https://img.shields.io/badge/License-MIT-green) ![Memory](https://img.shields.io/badge/Memory%20Efficient-%3C2GB-orange)
+An end-to-end proof of concept for extracting spatially mapped components from 3D uint8 volumes and rendering them independently in WebGL2.
 
-VolumeSegmenter is a specialized tool designed to solve the challenge of rendering large 3D volume data in WebGL environments. It intelligently segments large volumetric datasets into smaller, meaningful components while preserving critical structural information.
+The question is whether background removal, component extraction and explicit spatial metadata can form a usable browser rendering pipeline—and what data-size and quality trade-offs this introduces. This is an engineering feasibility study, not an anatomical segmentation model or a medical application.
 
-## Problem Solved
+## What the experiment shows
 
-Large 3D volumes (e.g., medical CT/MRI scans) present significant challenges for WebGL rendering:
-- **Memory constraints**: Volumes larger than 100MB often exceed browser memory limits
-- **Rendering performance**: Single large volumes cause significant frame rate drops
-- **Network loading time**: Large files take too long to transfer and initialize
-- **Quality degradation**: Simple downsampling loses important structural details
-- **Partial render key component**: Focus on the interest part of the voume
+The original skull experiment produced **5.85 MiB from 16 MiB (63.5% smaller)**. Its code, metadata and file hashes are preserved under [experiments/legacy](experiments/legacy); the original component files remain in `skull/`. That result includes thresholding, morphological filtering and downsampling. It is not a lossless compression ratio.
 
-### Result
-Originally `skull_256x256x256_uint8.raw` is about __16 MB__, but after the extraction, we can achieve about __6 MB__
+The corrected pipeline predicts a label for **every retained voxel**, exports coordinates and sampling spacing, and renders every component. The full-resolution reconstruction exactly matches the thresholded input on the included skull dataset. However, K-means partitions have overlapping bounding boxes containing zeros: writing each as a dense RAW array can increase storage substantially. Independent component rendering works; universal storage or rendering improvements are not established.
 
-Original Volume Rendering Result
-![originalSkull](./originalSkull.png)
+### Controlled skull experiment
 
-Extract Volume Rendering Result
-![extractSkull](./extractSkull.png)
+256 × 256 × 256 uint8; threshold 13.621871; seed 42; eight clusters; spatial weight 0.5. MiB means 1,048,576 bytes. Results are raw payload sizes, excluding metadata and HTTP compression.
 
-Extract Volume Rendering With Reduce Step Size Result
-![extractSkullWithReduceStepSize](./extractSkullWithReduceStepSize.png)
+| Variant | Output MiB | Reduction vs input | MAE vs thresholded input | Missing retained voxels |
+| --- | ---: | ---: | ---: | ---: |
+| Original | 16.00 | 0% | 0¹ | 0 |
+| Background + whole bounding box | 16.00 | 0% | 0 | 0 |
+| Full-resolution partitions | 60.96 | −281.0% | 0 | 0 |
+| Partitions + 2× decimation per axis | 7.65 | 52.2% | 4.40 | 1,404,051 |
+| Whole bounding box + 2× decimation | 2.00 | 87.5% | 4.24 | 1,326,794 |
 
-Extract Volume Partial Rendering Result
-![partialSkull](./partialSkull.png)
+¹ The original row is compared to the original input. All processed rows use the same thresholded reference. MAE is measured over the entire original voxel grid in uint8 intensity units. The JSON report also includes error against the original input, introduced nonzero voxels and overlaps.
 
-VolumeSegmenter addresses these issues by:
-- **Splitting** large volumes into 4-16 anatomically meaningful sub-volumes
-- **Controlling** file sizes to 5-15% of the original volume per component
-- **Preserving** critical structural integrity and spatial relationships
-- **Optimizing** outputs for direct WebGL consumption
+**Interpretation:** the current partitioning scheme enables selective display, but it does not beat simple decimation in size or reconstruction error on this dataset. Downsampling is a major contributor to size reduction. These negative results are part of the feasibility study, not hidden by choosing only the smallest output.
 
-## Core Approach
+[Machine-readable extraction report](experiments/results/skull-report.json) includes the input hash, environment, exact bytes, metrics and single-run processing times. These timings are illustrative, not statistical throughput claims. No peak-memory or network-transfer improvement is claimed.
 
-### Adaptive Background Separation
-Automatically identifies and removes background regions without manual thresholding. Uses K-means clustering to determine optimal background intensity thresholds based on data distribution, ensuring foreground structures remain intact.
+### Matched rendering comparison
 
-### Spatial-Intensity Balanced Segmentation
-Intelligently balances spatial connectivity and intensity similarity when grouping voxels:
-- **Spatial priority**: Ensures physically connected structures remain unified even with intensity variations
-- **Intensity sensitivity**: Separates distinct structures even when spatially adjacent
-- **Dynamic weighting**: Automatically adjusts the balance based on data contrast characteristics
+Same camera (X=90°, Y=0°, distance=1.8), step=1 original voxel unit, density cutoff=60, viewport and transfer function. Nearest sampling makes the mapping explicit; this cutoff hides low-density differences, so the numerical reconstruction metrics above remain essential.
 
-### Multi-stage Component Generation
-Creates anatomically meaningful components through:
-- **K-means clustering**: Efficiently groups voxels without memory-intensive algorithms
-- **Region growing**: Expands clusters to ensure spatial continuity
-- **Guaranteed component count**: Ensures 4-8 meaningful components regardless of input complexity
-- **Fallback mechanisms**: Creates grid-based components when algorithmic segmentation fails
+| Original | Full-resolution partitions | Decimated partitions |
+| --- | --- | --- |
+| ![Original volume](experiments/results/original.jpg) | ![Complete partitions](experiments/results/partition.jpg) | ![Decimated partitions](experiments/results/lossy.jpg) |
 
-### Intelligent Size Optimization
-Automatically optimizes component sizes for WebGL rendering:
-- **Adaptive downsampling**: Reduces resolution only when necessary based on volume size
-- **File size control**: Limits each component to user-specified maximum size
-- **Spatial mapping**: Accurately maps segmented components back to original coordinate space
-- **Memory efficiency**: Processes volumes up to 1GB with less than 2GB RAM usage
+Rendering measurements and verification details are in [experiments/results/VALIDATION.md](experiments/results/VALIDATION.md).
 
-## Input Requirements
+## Reproduce
 
-- **Format**: Raw binary volume files (.raw)
-- **Data type**: Unsigned 8-bit integers (uint8)
-- **Dimensions**: Any 3D size (e.g., 128×128×128, 256×256×256, 512×512×128)
-- **Content**: Medical imaging, scientific data, or any 3D volumetric dataset
+Python 3.12+ and a WebGL2-capable browser are required. The recorded environment used Python 3.13.7 on macOS ARM64. The viewer has no npm dependencies or build step.
 
-## Output Format
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-lock.txt
+python -m unittest discover -s tests -v
+python benchmark.py
+python -m http.server 8765 --bind 127.0.0.1
+```
 
-- **File format**: Individual .raw files for each segmented component
-- **Naming convention**: `component_{index}_{size_x}x{size_y}x{size_z}_{trans_x}x{trans_y}x{trans_z}_0.0x0.0x0.0.raw`
-  - `size_x,y,z`: Component dimensions in voxels
-  - `trans_x,y,z`: Translation coordinates in original volume space
-  - `0.0x0.0x0.0`: Rotation values (currently not used)
+On Windows, activate with `.venv\Scripts\activate`. Open [the local viewer](http://127.0.0.1:8765/webgl_volume_rendering.html) after the benchmark finishes. It generates five variants under `experiments/current/`, which is ignored by Git. Generated outputs are intentionally not duplicated in the repository. Existing results are never silently overwritten: for a rerun, use a fresh directory:
 
-- **Metadata**: JSON file containing processing parameters and component information
-- **Component count**: Guaranteed 4-8 meaningful components per volume
+```bash
+python benchmark.py --output experiments/run2
+```
 
-## Performance Characteristics
+Then open `webgl_volume_rendering.html?base=./experiments/run2/`. `requirements.txt` specifies compatible ranges; `requirements-lock.txt` records the tested versions. Pinning versions and limiting numerical libraries to one thread improves repeatability; bitwise equivalence across different platforms/library versions is not promised.
 
-| Volume Size | Peak Memory | Processing Time | Output Components | Total Output Size |
-|-------------|-------------|-----------------|-------------------|-------------------|
-| 128³ (2.1MB) | <500MB | ~12 seconds | 4-6 | 1.5-2.5MB |
-| 256³ (16.8MB) | <1.2GB | ~38 seconds | 6-8 | 8-12MB |
-| 512³ (134.2MB) | <1.8GB | ~2 minutes | 8-12 | 60-80MB |
+The schema-2 CLI replaces legacy `--max-components`, `--min-ratio` and `--max-ratio` controls with explicit `--components` and `--downsample` settings. It does not silently force a component count or file-size target. The old `UniversalVolumeSegmenter` class is preserved only in the legacy source.
 
-## WebGL Integration Benefits
+### Process another volume
 
-- **Faster loading**: Smaller files load progressively
-- **Lower memory footprint**: Components can be loaded/unloaded as needed
-- **Improved performance**: Rendering smaller volumes increases frame rates
-- **Progressive detail**: Load lower-resolution components first, then higher-detail ones
-- **Direct compatibility**: Output format works with standard WebGL volume rendering libraries
+```bash
+python extractVolume.py --input input.raw --shape 320 240 128 \
+  --output experiments/custom --components 8 --seed 42 \
+  --spatial-weight 0.5 --downsample 1
+```
 
-## Typical Use Cases
+`--shape` is **X Y Z**. Files must contain exactly X×Y×Z bytes, uint8, X varying fastest. The NumPy array is Z,Y,X in C order. `--threshold 20` overrides the automatic intensity threshold. `--downsample 2` keeps every second voxel along each axis, without anti-aliasing; it is explicitly lossy and can remove thin structures. Use `--mode crop` for a single foreground bounding box, or `--mode original` for the unthresholded baseline.
 
-- **Medical visualization**: Rendering high-resolution CT/MRI scans in web browsers
-- **Scientific data exploration**: Interactive analysis of large simulation datasets
-- **3D content delivery**: Web-based volumetric content for education and research
-- **Telemedicine applications**: Remote viewing of medical imaging studies
+Open `webgl_volume_rendering.html?manifest=./experiments/custom/metadata.json` to load custom output. The mode selector is disabled for a custom manifest. Component checkboxes control visibility; all components are currently downloaded and kept resident, so this does **not** implement streaming or GPU-memory savings from unloading.
 
-VolumeSegmenter transforms large, unwieldy 3D volumes into WebGL-friendly components without sacrificing critical structural information, enabling high-quality interactive 3D visualization in web environments.
+## Pipeline and design
 
-### Files
-`extractVolume.py` is used to cut the volume in pieces and able to render with `webgl_volume_rendering.html`
+```mermaid
+flowchart LR
+ A[RAW uint8 + XYZ dimensions] --> B[Seeded background threshold]
+ B --> C[Fit spatial/intensity K-means on sample]
+ C --> D[Predict every retained voxel in batches]
+ D --> E[Crop disjoint labels into dense components]
+ E --> F[Optional explicit decimation]
+ F --> G[RAW files + spatial metadata]
+ G --> H[WebGL2 full or selective rendering]
+ G --> I[CPU reconstruction and error metrics]
+```
 
-I purposely use html and JS to reduce the barrier across platform. As long as the device support webgl, should be able to render with extracted volume.
+- K-means explores spatial/intensity grouping without claiming semantic or anatomical regions. Features are standardized **before** applying their weights; weights therefore have an effect.
+- Sampling limits the training set to 30,000 foreground voxels. Prediction covers all retained voxels in batches; unsampled points are not dropped.
+- Each retained voxel has one label before decimation. The implementation avoids dilation and synthetic extra components, which previously obscured coverage and overlap. Empty input produces zero components.
+- Dense component bounding boxes may overlap even when their nonzero voxels are disjoint. Decimation followed by block reconstruction can introduce nonzero overlaps; CPU and GPU both merge these using maximum intensity. Metrics report them explicitly.
+- The viewer uses a deterministic, single-pass front-to-back emission/absorption ray march, starting at the whole-volume ray entry. It does not use the old frame accumulation or claim physical path tracing. Every supported sampler has a branch, and texture limits are checked.
 
-### How to use
-To extract the volume, you need to run
-`python .\extractVolume.py --input .\skull_256x256x256_uint8.raw --output ./skull --shape 256 256 256`
+### Metadata contract (schema 2)
 
-and this will give you the extract files in target folder
+All spatial metadata is XYZ, in original voxel units. There is no physical millimeter spacing or rotation support in this version.
 
-Then to render volumes (WebGL can handle 16 volumes at most at the same time)
+```json
+{
+  "schema_version": 2,
+  "dtype": "uint8",
+  "dimensions_xyz": [320, 240, 128],
+  "components": [{
+    "file": "component_1.raw",
+    "dimensions_xyz": [5, 4, 4],
+    "origin_xyz": [4, 3, 2],
+    "spacing_xyz": [2, 2, 2],
+    "extent_xyz": [9, 7, 7]
+  }]
+}
+```
 
-you need to update the settings in `main()`, 
+`extent_xyz` is the exclusive original-space extent, **not** the stored sample count. The last reconstructed block is clipped to that extent. A world point `p` inside the component maps to sample index `floor((p - origin) / spacing)`. This convention is shared by the CPU reconstruction and nearest-sampled renderer. The real manifest also includes byte counts, hashes, parameters and processing time.
 
-for example to update `volumeTexture1` for loading the volume,
+## Scope and limitations
 
-update `volumeTextures` for targeting volumes
+- One real dataset and synthetic correctness fixtures have been tested; generality across CT/MRI or scientific datasets is unproven.
+- Background estimation is an intensity heuristic, not a guarantee of structural preservation. No morphology is applied in the corrected path; its output is intentionally different from the legacy experiment.
+- The extractor loads the full input and allocates foreground indices and labels. It is not an out-of-core solution and has no verified RAM ceiling for large inputs.
+- At most 15 components are supported by this viewer, further limited by device texture capabilities. This is an implementation constraint, not a universal WebGL limit. Rays are limited to 8,192 steps.
+- Nearest sampling and naive decimation prioritize a clear reference implementation over visual smoothness. Quality improvements need separate, controlled measurements.
+- Next experiments: spatial bricks versus K-means, lossless byte compression, more datasets, and actual selective loading. None are claimed as completed.
 
-and update `volumeInfos` for target volume information. Just keep in mind that the generated file is having format as `component_1_{x}x{y}x{z}_{pos_x}x{pos_y}x{pos_z}_{rotate_x}x{rotate_y}x{rotate_z}.raw`
+## Repository map
 
-and for `pos` in `volumeInfos`, needs to be `[pos_x/-2, pos_w/-2, pos_z/-2]`
+- `extractVolume.py`: extraction, schema generation and CPU reconstruction.
+- `benchmark.py`: five controlled extraction variants and metrics.
+- `viewer.js` / `webgl_volume_rendering.html`: metadata-driven WebGL2 viewer.
+- `tests/test_pipeline.py`: exact reconstruction, boundaries, non-cubic coordinates, empty/tiny data, coverage beyond the training sample, weights and reproducibility.
+- `experiments/results/`: measured results and screenshots.
+- `experiments/legacy/`: unmodified historical source, README, metadata and inventory. Legacy relative asset URLs expect the old repository-root layout; use Git revision `01fcf00` to run that version directly.
+
+The included skull data and historical images predate this revision. No new dataset provenance or license grant is asserted here; the earlier README's MIT badge did not have a corresponding license file.

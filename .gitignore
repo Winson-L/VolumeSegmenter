@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+.DS_Store
+experiments/current/
+
+experiments/first-run/
+experiments/prethread-run/
