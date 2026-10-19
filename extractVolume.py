@@ -1,6 +1,6 @@
 """Reproducible uint8 volume extraction. Arrays are ZYX; metadata is XYZ.
 
-This is spatial/intensity partitioning, not anatomical segmentation. Every
+The default is tightly cropped, disjoint spatial partitioning, not anatomical segmentation. Every
 retained voxel is assigned once before optional, explicitly lossy decimation.
 """
 import argparse
@@ -37,7 +37,7 @@ def background_threshold(volume, seed=42):
     return round(float(model.cluster_centers_.min()), 6)
 
 
-def partition(volume, components=8, seed=42, spatial_weight=0.5, batch_size=100000):
+def kmeans_partition(volume, components=8, seed=42, spatial_weight=0.5, batch_size=100000):
     """Fit on a bounded sample; predict ALL foreground voxels in bounded batches."""
     foreground = np.flatnonzero(volume)
     labels = np.zeros(volume.size, dtype=np.uint8)
@@ -61,9 +61,71 @@ def partition(volume, components=8, seed=42, spatial_weight=0.5, batch_size=1000
     return labels.reshape(volume.shape)
 
 
+def spatial_partition(volume, components=8):
+    """Greedy axis-aligned splits with tight child crops; boxes never overlap.
+
+    Try quarter/mid/three-quarter planes on each axis. Prefer the greatest
+    reduction in stored bounding-box voxels, breaking ties by smaller largest
+    child. This is a bounded heuristic, not a globally minimal partition.
+    """
+    def tight(lo, hi):
+        block = volume[tuple(slice(a, b) for a, b in zip(lo, hi))]
+        bounds = []
+        for axis in range(3):
+            occupied = np.flatnonzero(np.any(block, axis=tuple(i for i in range(3) if i != axis)))
+            if not occupied.size:
+                return None
+            bounds.append((occupied[0], occupied[-1] + 1))
+        return (lo + np.array([a for a, b in bounds]),
+                lo + np.array([b for a, b in bounds]))
+
+    def size(box):
+        return int(np.prod(box[1] - box[0]))
+
+    def surface(box):
+        z, y, x = box[1] - box[0]
+        return int(x * y + y * z + z * x)
+
+    root = tight(np.zeros(3, dtype=int), np.array(volume.shape))
+    if root is None:
+        return np.zeros(volume.shape, dtype=np.uint8)
+    leaves = [root]
+    while len(leaves) < components:
+        best = None
+        for index, box in enumerate(leaves):
+            lo, hi = box
+            for axis in range(3):
+                length = hi[axis] - lo[axis]
+                for offset in sorted(set(int(length * f) for f in (0.25, 0.5, 0.75))):
+                    if not 0 < offset < length:
+                        continue
+                    middle = lo[axis] + offset
+                    left_hi, right_lo = hi.copy(), lo.copy()
+                    left_hi[axis], right_lo[axis] = middle, middle
+                    left, right = tight(lo, left_hi), tight(right_lo, hi)
+                    if left is None or right is None:
+                        continue
+                    score = (size(box) - size(left) - size(right),
+                             size(box) - max(size(left), size(right)),
+                             -surface(left) - surface(right))
+                    if best is None or score > best[0]:
+                        best = (score, index, left, right)
+        if best is None:
+            break
+        _, index, left, right = best
+        leaves[index:index + 1] = [left, right]
+    labels = np.zeros(volume.shape, dtype=np.uint8)
+    for identifier, (lo, hi) in enumerate(leaves, 1):
+        region = tuple(slice(a, b) for a, b in zip(lo, hi))
+        labels[region] = np.where(volume[region] > 0, identifier, 0)
+    return labels
+
+
 @threadpool_limits.wrap(limits=1)
 def extract(input_path, output_dir, shape_xyz, *, mode='partition', threshold=None,
-            components=8, seed=42, spatial_weight=0.5, downsample=1):
+            components=8, seed=42, spatial_weight=0.5, downsample=1, strategy="spatial"):
+    if strategy not in ('spatial', 'kmeans'):
+        raise ValueError('Unknown partition strategy')
     if mode not in ('original', 'crop', 'partition'):
         raise ValueError('Unknown mode')
     if not 1 <= components <= 15 or not 0 <= spatial_weight <= 1 or downsample < 1 or int(downsample) != downsample:
@@ -80,7 +142,11 @@ def extract(input_path, output_dir, shape_xyz, *, mode='partition', threshold=No
     retained = original.copy()
     if mode != 'original':
         retained[retained <= cutoff] = 0
-    labels = partition(retained, components, seed, spatial_weight) if mode == 'partition' else (retained > 0).astype(np.uint8)
+    if mode == 'partition':
+        labels = (spatial_partition(retained, components) if strategy == 'spatial'
+                  else kmeans_partition(retained, components, seed, spatial_weight))
+    else:
+        labels = (retained > 0).astype(np.uint8)
     ids = np.unique(labels[labels > 0]) if mode != 'original' else [1]
     records = []
     for identifier in ids:
@@ -104,7 +170,7 @@ def extract(input_path, output_dir, shape_xyz, *, mode='partition', threshold=No
                     input_file=Path(input_path).name, input_sha256=hashlib.sha256(original.tobytes()).hexdigest(),
                     dimensions_xyz=list(shape_xyz), original_bytes=original.nbytes,
                     parameters=dict(mode=mode, threshold=cutoff, seed=seed, components=components,
-                                    spatial_weight=spatial_weight, downsample=downsample),
+                                    spatial_weight=spatial_weight, downsample=downsample, strategy=strategy),
                     original_nonzero=int(np.count_nonzero(original)), retained_nonzero=int(np.count_nonzero(retained)),
                     components=records, output_bytes=sum(c['bytes'] for c in records),
                     processing_seconds=time.perf_counter() - start,
@@ -138,6 +204,7 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--shape', type=int, nargs=3, required=True, metavar=('X', 'Y', 'Z'))
     parser.add_argument('--mode', choices=['original', 'crop', 'partition'], default='partition')
+    parser.add_argument('--strategy', choices=['spatial', 'kmeans'], default='spatial')
     parser.add_argument('--threshold', type=float)
     parser.add_argument('--components', type=int, default=8)
     parser.add_argument('--seed', type=int, default=42)

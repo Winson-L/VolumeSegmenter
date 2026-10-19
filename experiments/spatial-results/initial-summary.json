@@ -1,0 +1,148 @@
+{
+  "results": [
+    {
+      "case": "original",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "gpu_median_ms": 5.019811499999999,
+      "round_medians_ms": [
+        5.0294989999999995,
+        4.7477495,
+        6.121312
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "all_blocks",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "gpu_median_ms": 10.388624,
+      "round_medians_ms": [
+        10.1196245,
+        11.6218125,
+        8.1967285
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_1",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.5601660000000002,
+      "round_medians_ms": [
+        1.5920825,
+        1.547041,
+        1.558812
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_2",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.565416,
+      "round_medians_ms": [
+        1.54127,
+        1.575229,
+        1.568916
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_3",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 2.1921865,
+      "round_medians_ms": [
+        2.1999370000000003,
+        2.173437,
+        2.188458
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_4",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 2.0189785000000002,
+      "round_medians_ms": [
+        2.0189785000000002,
+        1.9741875,
+        2.0179165
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_5",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.4007494999999999,
+      "round_medians_ms": [
+        1.410562,
+        1.3887285,
+        1.3940000000000001
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_6",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.5518115,
+      "round_medians_ms": [
+        1.457895,
+        1.6231865,
+        1.5093325
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_7",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 2.627041,
+      "round_medians_ms": [
+        2.6533745,
+        2.514125,
+        2.6337285
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_8",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 3.0851875,
+      "round_medians_ms": [
+        3.3095415,
+        2.5998115000000004,
+        3.157395
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_1_hidden_others_resident",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.5622705,
+      "round_medians_ms": [
+        1.5615,
+        1.5538535,
+        1.5731454999999999
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "monolith_same_roi_1",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "gpu_median_ms": 1.557291,
+      "round_medians_ms": [
+        1.557291,
+        1.5552285000000001,
+        1.56077
+      ],
+      "valid_gpu_samples": 60
+    }
+  ]
+}

@@ -24,7 +24,13 @@ def run(input_path, shape, output):
         reference = original if mode == 'original' else np.where(original > cutoff, original, 0)
         delta = restored.astype(np.float32) - reference.astype(np.float32)
         rows.append(dict(experiment=name, **{k: meta[k] for k in ['output_bytes', 'processing_seconds', 'retained_nonzero']},
-                         component_count=len(meta['components']), reduction_percent=100 * (1 - meta['output_bytes'] / original.nbytes),
+                         component_count=len(meta['components']),
+                         bounding_boxes_disjoint=all(
+                             any(a['origin_xyz'][axis] + a['extent_xyz'][axis] <= b['origin_xyz'][axis]
+                                 or b['origin_xyz'][axis] + b['extent_xyz'][axis] <= a['origin_xyz'][axis]
+                                 for axis in range(3))
+                             for i, a in enumerate(meta['components']) for b in meta['components'][i + 1:]),
+                         reduction_percent=100 * (1 - meta['output_bytes'] / original.nbytes),
                          threshold=meta['parameters']['threshold'],
                          mae_vs_retained=float(np.abs(delta).mean()),
                          mae_vs_original=float(np.abs(restored.astype(np.float32) - original).mean()),
@@ -43,6 +49,6 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--input', default='skull_256x256x256_uint8.raw')
     p.add_argument('--shape', type=int, nargs=3, default=[256, 256, 256])
-    p.add_argument('--output', default='experiments/current')
+    p.add_argument('--output', default='experiments/spatial')
     args = p.parse_args()
     run(args.input, args.shape, args.output)

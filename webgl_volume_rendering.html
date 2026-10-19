@@ -4,20 +4,25 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VolumeSegmenter · Pipeline study</title>
 <style>
-body{margin:0;background:#111820;color:#e2eaf3;font:14px system-ui}canvas{display:block;width:100vw;height:100vh}aside{position:absolute;top:16px;left:16px;width:260px;padding:18px;background:#182330ed;border:1px solid #425366;border-radius:10px;max-height:90vh;overflow:auto}h1{font-size:20px;margin:0 0 6px}p{line-height:1.5;color:#b8c8da}label{display:block;margin:12px 0}input[type=range],select,button{width:100%}button,select{padding:7px;background:#293b50;color:white;border:1px solid #60738a;border-radius:4px}#status{white-space:pre-wrap;font-size:12px}#components label{margin:5px 0}small{color:#b8c8da}
+body{margin:0;background:#111820;color:#e2eaf3;font:14px system-ui}canvas{display:block;width:100vw;height:100vh}aside{position:absolute;top:16px;left:16px;width:280px;padding:14px;font-size:12px;background:#182330ed;border:1px solid #425366;border-radius:10px;max-height:90vh;overflow:auto}h1{font-size:18px;margin:0 0 6px}p{margin:6px 0;line-height:1.4;color:#b8c8da}label{display:block;margin:6px 0}input[type=range],select,button{width:100%}button,select{padding:4px;background:#293b50;color:white;border:1px solid #60738a;border-radius:4px}#status{white-space:pre-wrap;font-size:12px}#components label{margin:5px 0}small{color:#b8c8da}
 </style>
 <canvas id="canvas"></canvas>
 <aside>
 <h1>VolumeSegmenter</h1><p>A reproducible volume extraction experiment</p>
-<label>Dataset<select id="dataset"><option value="original">Original</option><option value="crop">Background + crop</option><option value="partition">Partition · full resolution</option><option value="lossy" selected>Partition · 2× decimation</option><option value="decimated">Crop · 2× decimation baseline</option></select></label>
-<label>Rotation X <input id="rx" type="range" min="-180" max="180" value="0"></label>
+<label>Dataset<select id="dataset"><option value="original">Original</option><option value="crop">Background + crop</option><option value="partition" selected>Partition · full resolution</option><option value="lossy">Partition · 2× decimation</option><option value="decimated">Crop · 2× decimation baseline</option></select></label>
+<label>Rotation X <input id="rx" type="range" min="-180" max="180" value="90"></label>
 <label>Rotation Y <input id="ry" type="range" min="-180" max="180" value="0"></label>
 <label>Distance <input id="zoom" type="range" min="0.8" max="4" step="0.05" value="1.8"></label>
 <label>Step (original voxel units) <input id="step" type="range" min="0.5" max="4" step="0.5" value="1"></label>
-<label>Density cutoff (0–255) <input id="cutoff" type="range" min="0" max="254" value="20"></label>
-<div id="components"></div>
-<button id="measure">Measure 60 frames</button><p id="status">Loading…</p>
-<small>Nearest voxel sampling; max density in overlaps. Identical camera, transfer function and steps across modes. Measurement includes rendering, not network transfer.</small>
+<label>Density cutoff (0–255) <input id="cutoff" type="range" min="0" max="254" value="60"></label>
+<label><input id="release" type="checkbox" checked> Release unchecked textures</label>
+<button id="all">Load all components</button>
+<div id="components"></div><p id="memory"></p>
+<button id="measure">Measure 60 frames</button>
+<button id="compare">Compare original / all / each block</button>
+<button id="download" disabled>Download comparison JSON</button><p id="status">Loading…</p>
+<details><summary>Full measurement JSON</summary><pre id="report" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>
+<small>Nearest voxel sampling; max density in overlaps. Identical camera, transfer function and steps across modes. Texture payload excludes driver allocation and framebuffers. Timing excludes loading.</small>
 </aside>
-<script type="module" src="viewer.js"></script>
+<script type="module" src="viewer.js?v=spatial-2"></script>
 </html>

@@ -1,0 +1,2332 @@
+{
+  "schema_version": 1,
+  "input_sha256": "3903c8fcb217edc141eed698e9c8c5afe4070f914e9c65687f2b6ca5e8e08b7d",
+  "partition_components": [
+    {
+      "file": "component_1.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        0,
+        0,
+        0
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "c12a598ab104e957748fff353628dc9b54e6ad6e5e7b109862735114ff8ce59f"
+    },
+    {
+      "file": "component_2.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        128,
+        0,
+        0
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "28a608e82f3ab01e9af084bfe4b6e7fdfe3ce05c37c811b745bf5d1adc4af923"
+    },
+    {
+      "file": "component_3.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        0,
+        128,
+        0
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "53825a1df1c290d8924bea68f2458e019d18dae82fc083f04144e5c5f6f6a11d"
+    },
+    {
+      "file": "component_4.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        128,
+        128,
+        0
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "dfaafec1e6fda77fd8738aad23704605fd97a1e022428985c1605550a2903eef"
+    },
+    {
+      "file": "component_5.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        0,
+        0,
+        128
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "df50e89a4557ad0fda760cdae545095d4a4097e05de5ceaccb8d791544c0faca"
+    },
+    {
+      "file": "component_6.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        128,
+        0,
+        128
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "5d4674b45416bcf4be365430617977ae960574f1318ab7f2ef7fdf4cb4c04556"
+    },
+    {
+      "file": "component_7.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        0,
+        128,
+        128
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "c40aca21c334a4d76dbd02ad278a6e7b10d1186c32f099eefb9959777966a6d1"
+    },
+    {
+      "file": "component_8.raw",
+      "dimensions_xyz": [
+        128,
+        128,
+        128
+      ],
+      "origin_xyz": [
+        128,
+        128,
+        128
+      ],
+      "spacing_xyz": [
+        1,
+        1,
+        1
+      ],
+      "extent_xyz": [
+        128,
+        128,
+        128
+      ],
+      "bytes": 2097152,
+      "sha256": "32c1b74e53cb7831af8ba23455c863de7ea39c4fbe72b21ac78c9fc351673778"
+    }
+  ],
+  "environment": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "renderer": "WebKit WebGL"
+  },
+  "methodology": "Three seeded-shuffled rounds, five warmups and 20 timed frames per case per round; fixed 1280x720, camera 90/0/1.8, step 1, cutoff 60. Upload and network time excluded. Texture payload is R8 voxel bytes, NOT measured total VRAM. Single blocks show less content; monolith_same_roi_1 is the matched-content control. CPU buffers are not cached by this app. Driver memory reclamation may be deferred.",
+  "results": [
+    {
+      "case": "original",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "gpu_median_ms": 8.248833000000001,
+      "round_medians_ms": [
+        8.7909165,
+        8.774979,
+        6.305
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "all_blocks",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "gpu_median_ms": 9.74502,
+      "round_medians_ms": [
+        8.9602285,
+        11.684979,
+        8.9757075
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_1",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.56625,
+      "round_medians_ms": [
+        1.593312,
+        1.5658745,
+        1.5620615
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_2",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.565666,
+      "round_medians_ms": [
+        1.5703745,
+        1.5659580000000002,
+        1.5624164999999999
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_3",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 2.2009995,
+      "round_medians_ms": [
+        2.365437,
+        2.1446034999999997,
+        2.1714789999999997
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_4",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.911562,
+      "round_medians_ms": [
+        1.9130205,
+        1.9635825,
+        1.8056455
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_5",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.417833,
+      "round_medians_ms": [
+        1.4342489999999999,
+        1.4538955,
+        1.4048325
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_6",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.59377,
+      "round_medians_ms": [
+        1.4875414999999998,
+        1.5883115,
+        1.7269785
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_7",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 2.5514995,
+      "round_medians_ms": [
+        2.4240205,
+        2.6007914999999997,
+        2.4043745000000003
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_8",
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 3.2267915,
+      "round_medians_ms": [
+        3.249291,
+        2.9939785,
+        3.9724165
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "block_1_hidden_others_resident",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 2097152,
+      "gpu_median_ms": 1.6345619999999998,
+      "round_medians_ms": [
+        1.6411864999999999,
+        1.6239365000000001,
+        1.6259575000000002
+      ],
+      "valid_gpu_samples": 60
+    },
+    {
+      "case": "monolith_same_roi_1",
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "gpu_median_ms": 1.6442489999999998,
+      "round_medians_ms": [
+        1.6548325,
+        1.594708,
+        1.6713740000000001
+      ],
+      "valid_gpu_samples": 60
+    }
+  ],
+  "order": [
+    "original",
+    "block_2",
+    "block_3",
+    "monolith_same_roi_1",
+    "block_1",
+    "block_8",
+    "block_7",
+    "block_4",
+    "block_1_hidden_others_resident",
+    "block_6",
+    "block_5",
+    "all_blocks",
+    "all_blocks",
+    "block_5",
+    "block_3",
+    "block_4",
+    "block_2",
+    "block_7",
+    "block_1_hidden_others_resident",
+    "block_8",
+    "block_6",
+    "monolith_same_roi_1",
+    "original",
+    "block_1",
+    "original",
+    "block_4",
+    "block_7",
+    "block_8",
+    "block_5",
+    "all_blocks",
+    "block_3",
+    "block_2",
+    "block_1",
+    "block_6",
+    "block_1_hidden_others_resident",
+    "monolith_same_roi_1"
+  ],
+  "runs": [
+    {
+      "case": "original",
+      "round": 1,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "original",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 8.7909165,
+      "gpu_samples_ms": [
+        3.453625,
+        4.071875,
+        4.048416,
+        4.783875,
+        6.474083,
+        4.731083,
+        7.955999,
+        8.973708,
+        9.772958,
+        7.826499,
+        11.55875,
+        8.608125,
+        9.465875,
+        11.318875,
+        10.176916,
+        14.755124,
+        11.09525,
+        12.612291,
+        12.226083,
+        8.08825
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_2",
+      "round": 1,
+      "resident_components": [
+        2
+      ],
+      "visible_components": [
+        2
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.5703745,
+      "gpu_samples_ms": [
+        1.679416,
+        1.564125,
+        1.638749,
+        1.520875,
+        1.971666,
+        1.569583,
+        3.868375,
+        1.577624,
+        2.035458,
+        1.571166,
+        1.556499,
+        1.439541,
+        1.5785,
+        1.50875,
+        1.871499,
+        1.563208,
+        1.58275,
+        1.557416,
+        1.565999,
+        1.547791
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_3",
+      "round": 1,
+      "resident_components": [
+        3
+      ],
+      "visible_components": [
+        3
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 2.365437,
+      "gpu_samples_ms": [
+        2.580249,
+        2.867,
+        2.378125,
+        2.05825,
+        4.812875,
+        2.110125,
+        2.783958,
+        2.719125,
+        2.404291,
+        2.598083,
+        2.111375,
+        2.156166,
+        2.247624,
+        2.249,
+        2.183749,
+        2.826749,
+        2.352749,
+        2.024375,
+        2.240166,
+        2.757916
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "monolith_same_roi_1",
+      "round": 1,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "crop",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.6548325,
+      "gpu_samples_ms": [
+        1.710458,
+        1.49575,
+        1.706791,
+        1.55975,
+        2.0885,
+        1.9655,
+        1.580083,
+        2.011833,
+        1.727541,
+        1.927416,
+        1.560333,
+        2.081083,
+        1.56475,
+        1.550166,
+        1.469833,
+        1.531124,
+        1.625249,
+        1.543374,
+        1.684416,
+        1.968875
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_1",
+      "round": 1,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.593312,
+      "gpu_samples_ms": [
+        1.553124,
+        1.981874,
+        1.584375,
+        1.736833,
+        1.870416,
+        1.532708,
+        1.634583,
+        1.638374,
+        1.602249,
+        1.560291,
+        1.539541,
+        1.565,
+        1.494124,
+        1.54725,
+        2.038625,
+        1.884124,
+        1.563625,
+        1.526375,
+        2.086749,
+        1.916375
+      ],
+      "cpu_submit_and_finish_median_ms": 0.25,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_8",
+      "round": 1,
+      "resident_components": [
+        8
+      ],
+      "visible_components": [
+        8
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 3.249291,
+      "gpu_samples_ms": [
+        2.994499,
+        3.066624,
+        3.76875,
+        2.391999,
+        4.390624,
+        4.41375,
+        3.253291,
+        3.322999,
+        3.262875,
+        3.083624,
+        3.846083,
+        3.245291,
+        3.786874,
+        2.495875,
+        3.048375,
+        3.907958,
+        2.213499,
+        2.1575,
+        2.436749,
+        4.95
+      ],
+      "cpu_submit_and_finish_median_ms": 0.30000001192092896,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_7",
+      "round": 1,
+      "resident_components": [
+        7
+      ],
+      "visible_components": [
+        7
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 2.4240205,
+      "gpu_samples_ms": [
+        2.162499,
+        2.162499,
+        2.789625,
+        2.144,
+        2.765499,
+        2.911749,
+        2.163375,
+        2.206125,
+        2.27875,
+        2.187041,
+        2.61025,
+        2.642999,
+        3.383041,
+        3.002916,
+        2.4925,
+        2.807124,
+        2.355541,
+        2.162416,
+        2.145208,
+        2.633999
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_4",
+      "round": 1,
+      "resident_components": [
+        4
+      ],
+      "visible_components": [
+        4
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.9130205,
+      "gpu_samples_ms": [
+        2.020124,
+        1.819291,
+        1.935624,
+        1.912375,
+        1.84275,
+        1.770125,
+        2.582375,
+        1.913666,
+        1.782458,
+        1.966874,
+        1.83525,
+        2.283791,
+        1.77475,
+        2.015208,
+        1.786875,
+        1.780625,
+        2.045,
+        2.655374,
+        1.922999,
+        1.79975
+      ],
+      "cpu_submit_and_finish_median_ms": 0.20000004768371582,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_1_hidden_others_resident",
+      "round": 1,
+      "resident_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.6411864999999999,
+      "gpu_samples_ms": [
+        2.095374,
+        1.695791,
+        1.967666,
+        1.382124,
+        2.131083,
+        1.556499,
+        1.580249,
+        2.020749,
+        1.635749,
+        1.543125,
+        1.547833,
+        1.525375,
+        1.551374,
+        1.633375,
+        1.750083,
+        1.869333,
+        1.558333,
+        1.684875,
+        1.646624,
+        1.677166
+      ],
+      "cpu_submit_and_finish_median_ms": 0.2999999523162842,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_6",
+      "round": 1,
+      "resident_components": [
+        6
+      ],
+      "visible_components": [
+        6
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.4875414999999998,
+      "gpu_samples_ms": [
+        1.502375,
+        1.068125,
+        1.7345,
+        1.415333,
+        1.431166,
+        1.598291,
+        1.916374,
+        1.454124,
+        1.616124,
+        1.801458,
+        1.709583,
+        1.426,
+        1.705208,
+        1.422166,
+        1.455458,
+        1.583624,
+        1.909416,
+        1.447,
+        1.42325,
+        1.472708
+      ],
+      "cpu_submit_and_finish_median_ms": 0.20000004768371582,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_5",
+      "round": 1,
+      "resident_components": [
+        5
+      ],
+      "visible_components": [
+        5
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.4342489999999999,
+      "gpu_samples_ms": [
+        1.536874,
+        1.532875,
+        1.113999,
+        1.517,
+        1.114041,
+        1.402,
+        1.401624,
+        1.53175,
+        1.460374,
+        1.52125,
+        1.036875,
+        1.611458,
+        1.408124,
+        1.391624,
+        1.523374,
+        1.389125,
+        1.666125,
+        1.491666,
+        1.399125,
+        1.3785
+      ],
+      "cpu_submit_and_finish_median_ms": 0.20000004768371582,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "all_blocks",
+      "round": 1,
+      "resident_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "visible_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 8.9602285,
+      "gpu_samples_ms": [
+        10.415583,
+        5.890875,
+        7.274875,
+        6.002291,
+        6.348708,
+        8.674499,
+        8.5785,
+        7.47675,
+        9.097624,
+        7.223958,
+        8.3075,
+        8.822833,
+        11.253,
+        11.719333,
+        23.195374,
+        15.4375,
+        23.694708,
+        23.937666,
+        21.915083,
+        14.606541
+      ],
+      "cpu_submit_and_finish_median_ms": 0.30000001192092896,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "all_blocks",
+      "round": 2,
+      "resident_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "visible_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 11.684979,
+      "gpu_samples_ms": [
+        18.766624,
+        8.599875,
+        8.412625,
+        8.472374,
+        7.883791,
+        9.716791,
+        9.773249,
+        13.551875,
+        9.818083,
+        16.334833,
+        17.132041,
+        16.116874,
+        21.902624,
+        19.740208,
+        26.209916,
+        8.735333,
+        9.45875,
+        8.967791,
+        16.981875,
+        16.673291
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_5",
+      "round": 2,
+      "resident_components": [
+        5
+      ],
+      "visible_components": [
+        5
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.4538955,
+      "gpu_samples_ms": [
+        1.539208,
+        1.5245,
+        1.389291,
+        1.446708,
+        1.373208,
+        1.382791,
+        1.446374,
+        1.370499,
+        1.529583,
+        1.542499,
+        1.107999,
+        1.547416,
+        1.461083,
+        1.107249,
+        1.138374,
+        1.65,
+        1.482749,
+        1.545499,
+        1.469541,
+        1.233624
+      ],
+      "cpu_submit_and_finish_median_ms": 0.10000002384185791,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_3",
+      "round": 2,
+      "resident_components": [
+        3
+      ],
+      "visible_components": [
+        3
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 2.1446034999999997,
+      "gpu_samples_ms": [
+        2.251916,
+        2.139916,
+        2.050083,
+        2.113124,
+        2.426791,
+        2.112874,
+        1.945999,
+        1.702375,
+        2.421749,
+        2.28975,
+        2.149291,
+        1.697833,
+        2.1645,
+        2.099583,
+        2.222291,
+        2.282541,
+        2.21825,
+        2.062374,
+        2.155125,
+        1.931625
+      ],
+      "cpu_submit_and_finish_median_ms": 0.10000002384185791,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_4",
+      "round": 2,
+      "resident_components": [
+        4
+      ],
+      "visible_components": [
+        4
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.9635825,
+      "gpu_samples_ms": [
+        2.134375,
+        2.2805,
+        1.943041,
+        2.028124,
+        1.816249,
+        1.902625,
+        2.368166,
+        1.785875,
+        2.204416,
+        1.975291,
+        1.748416,
+        1.951874,
+        2.038874,
+        2.001,
+        2.363791,
+        1.894749,
+        1.780833,
+        1.773875,
+        2.263874,
+        1.910749
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_2",
+      "round": 2,
+      "resident_components": [
+        2
+      ],
+      "visible_components": [
+        2
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.5659580000000002,
+      "gpu_samples_ms": [
+        1.928,
+        1.571625,
+        1.504541,
+        1.526166,
+        1.806874,
+        1.603541,
+        1.963499,
+        1.565333,
+        1.587541,
+        1.435124,
+        1.465625,
+        1.49525,
+        1.563666,
+        1.942958,
+        1.528583,
+        1.556999,
+        1.566583,
+        1.397041,
+        1.86075,
+        1.8735
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_7",
+      "round": 2,
+      "resident_components": [
+        7
+      ],
+      "visible_components": [
+        7
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 2.6007914999999997,
+      "gpu_samples_ms": [
+        2.665499,
+        2.665166,
+        2.31875,
+        2.164041,
+        2.600625,
+        2.600958,
+        2.614458,
+        2.504958,
+        2.669125,
+        2.190875,
+        2.16525,
+        2.638124,
+        2.632875,
+        3.509708,
+        2.477208,
+        2.64,
+        1.981874,
+        2.665541,
+        2.318583,
+        2.598041
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_1_hidden_others_resident",
+      "round": 2,
+      "resident_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.6239365000000001,
+      "gpu_samples_ms": [
+        1.8905,
+        1.622374,
+        2.066291,
+        1.574,
+        1.648499,
+        1.374541,
+        1.493374,
+        2.026041,
+        1.502708,
+        1.558375,
+        1.968916,
+        1.625499,
+        1.541625,
+        1.543458,
+        3.919375,
+        2.059749,
+        1.374291,
+        1.571249,
+        1.66325,
+        1.970791
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_8",
+      "round": 2,
+      "resident_components": [
+        8
+      ],
+      "visible_components": [
+        8
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 2.9939785,
+      "gpu_samples_ms": [
+        3.056374,
+        2.550625,
+        2.556541,
+        3.333166,
+        2.36875,
+        3.317041,
+        3.215625,
+        3.92475,
+        2.370541,
+        3.237958,
+        2.931583,
+        2.403833,
+        2.631499,
+        2.412625,
+        3.296416,
+        3.189791,
+        3.87675,
+        2.469208,
+        3.085333,
+        2.437625
+      ],
+      "cpu_submit_and_finish_median_ms": 0.20000001788139343,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_6",
+      "round": 2,
+      "resident_components": [
+        6
+      ],
+      "visible_components": [
+        6
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.5883115,
+      "gpu_samples_ms": [
+        1.711125,
+        1.587374,
+        1.932166,
+        1.573625,
+        1.471208,
+        1.466375,
+        1.599291,
+        1.454291,
+        1.434666,
+        2.09125,
+        1.6085,
+        1.589249,
+        1.912708,
+        1.44075,
+        1.076125,
+        1.57625,
+        1.4315,
+        2.1025,
+        1.736791,
+        2.032125
+      ],
+      "cpu_submit_and_finish_median_ms": 0.20000004768371582,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "monolith_same_roi_1",
+      "round": 2,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "crop",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.594708,
+      "gpu_samples_ms": [
+        1.578625,
+        2.0355,
+        1.960416,
+        1.557749,
+        1.563166,
+        1.610791,
+        2.188041,
+        1.571416,
+        1.731666,
+        1.535958,
+        1.690208,
+        1.8755,
+        1.502375,
+        2.220124,
+        1.465875,
+        1.565416,
+        1.913624,
+        1.541083,
+        2.200999,
+        1.503999
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "original",
+      "round": 2,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "original",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 8.774979,
+      "gpu_samples_ms": [
+        3.842125,
+        4.207999,
+        3.682791,
+        5.348625,
+        6.36875,
+        5.276166,
+        5.750208,
+        10.779374,
+        8.409416,
+        10.111666,
+        7.973416,
+        12.031666,
+        8.440375,
+        13.040208,
+        12.025624,
+        9.994249,
+        9.109583,
+        14.031583,
+        11.580958,
+        13.821625
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_1",
+      "round": 2,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.5658745,
+      "gpu_samples_ms": [
+        1.533,
+        1.976125,
+        1.543875,
+        2.07675,
+        1.521625,
+        1.538874,
+        1.537958,
+        1.432624,
+        2.143874,
+        1.502458,
+        1.699874,
+        1.680875,
+        1.5675,
+        1.513833,
+        2.078041,
+        1.564249,
+        1.699124,
+        1.967124,
+        2.016999,
+        1.503208
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "original",
+      "round": 3,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "original",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 6.305,
+      "gpu_samples_ms": [
+        3.655416,
+        4.205583,
+        4.235958,
+        4.001,
+        6.6825,
+        6.542875,
+        10.020875,
+        11.449499,
+        7.517208,
+        4.12825,
+        3.985666,
+        4.273124,
+        4.018166,
+        6.067125,
+        4.803916,
+        11.146541,
+        9.702041,
+        12.082249,
+        13.358541,
+        12.919166
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_4",
+      "round": 3,
+      "resident_components": [
+        4
+      ],
+      "visible_components": [
+        4
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.8056455,
+      "gpu_samples_ms": [
+        1.773958,
+        1.77025,
+        1.785,
+        1.773791,
+        1.786916,
+        1.778375,
+        1.802916,
+        1.808375,
+        1.855291,
+        1.792958,
+        2.040166,
+        2.206249,
+        2.835999,
+        1.967083,
+        2.024666,
+        1.7675,
+        1.775124,
+        2.381666,
+        2.001291,
+        1.817875
+      ],
+      "cpu_submit_and_finish_median_ms": 0.10000002384185791,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_7",
+      "round": 3,
+      "resident_components": [
+        7
+      ],
+      "visible_components": [
+        7
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 2.4043745000000003,
+      "gpu_samples_ms": [
+        2.214375,
+        2.124083,
+        2.122,
+        2.1575,
+        2.429749,
+        2.149625,
+        2.272249,
+        2.810416,
+        2.674249,
+        2.612875,
+        2.844125,
+        2.61125,
+        3.332125,
+        2.104874,
+        3.471125,
+        2.379,
+        2.139499,
+        2.615416,
+        2.134458,
+        2.678458
+      ],
+      "cpu_submit_and_finish_median_ms": 0.10000002384185791,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_8",
+      "round": 3,
+      "resident_components": [
+        8
+      ],
+      "visible_components": [
+        8
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 3.9724165,
+      "gpu_samples_ms": [
+        3.070999,
+        3.171374,
+        4.322124,
+        3.94875,
+        3.068666,
+        3.123625,
+        4.335875,
+        4.364833,
+        5.309458,
+        4.325833,
+        3.732166,
+        2.57725,
+        3.996083,
+        4.40475,
+        4.653125,
+        3.875624,
+        2.428583,
+        4.647541,
+        4.4205,
+        3.04925
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_5",
+      "round": 3,
+      "resident_components": [
+        5
+      ],
+      "visible_components": [
+        5
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.4048325,
+      "gpu_samples_ms": [
+        1.558499,
+        1.22375,
+        1.532624,
+        1.400208,
+        1.392541,
+        1.524041,
+        1.408041,
+        1.385708,
+        1.399874,
+        1.499583,
+        1.1185,
+        1.50725,
+        1.392208,
+        1.419333,
+        1.121208,
+        1.4995,
+        1.544791,
+        1.416333,
+        1.401624,
+        1.393833
+      ],
+      "cpu_submit_and_finish_median_ms": 0.20000001788139343,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "all_blocks",
+      "round": 3,
+      "resident_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "visible_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 8.9757075,
+      "gpu_samples_ms": [
+        5.37725,
+        7.466374,
+        5.625874,
+        8.383791,
+        7.266875,
+        7.755458,
+        7.326083,
+        8.548624,
+        6.99825,
+        6.962416,
+        9.402791,
+        12.368125,
+        12.455624,
+        14.559833,
+        18.252333,
+        24.6395,
+        26.402249,
+        20.6945,
+        20.641333,
+        17.913
+      ],
+      "cpu_submit_and_finish_median_ms": 0.30000001192092896,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_3",
+      "round": 3,
+      "resident_components": [
+        3
+      ],
+      "visible_components": [
+        3
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 2.1714789999999997,
+      "gpu_samples_ms": [
+        1.024166,
+        0.969291,
+        2.237708,
+        2.5335,
+        2.175208,
+        1.861291,
+        2.327583,
+        2.11175,
+        1.88325,
+        2.087125,
+        2.693874,
+        2.282416,
+        2.915874,
+        2.16775,
+        2.627,
+        2.166791,
+        2.454125,
+        2.090875,
+        1.916125,
+        2.733958
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_2",
+      "round": 3,
+      "resident_components": [
+        2
+      ],
+      "visible_components": [
+        2
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.5624164999999999,
+      "gpu_samples_ms": [
+        1.50925,
+        1.495999,
+        1.396625,
+        1.690499,
+        1.584999,
+        2.096874,
+        1.564999,
+        1.579875,
+        1.56125,
+        1.554625,
+        1.530874,
+        1.670749,
+        1.478874,
+        1.5825,
+        1.551625,
+        1.963499,
+        1.462249,
+        2.020999,
+        1.563583,
+        1.458833
+      ],
+      "cpu_submit_and_finish_median_ms": 0.25,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_1",
+      "round": 3,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.5620615,
+      "gpu_samples_ms": [
+        1.478833,
+        1.552124,
+        1.980708,
+        1.557541,
+        2.031499,
+        1.506624,
+        1.562624,
+        1.401291,
+        1.693999,
+        1.547208,
+        1.555458,
+        1.618125,
+        2.952291,
+        1.505124,
+        1.676291,
+        1.572875,
+        1.967,
+        1.541499,
+        2.019333,
+        1.561499
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_6",
+      "round": 3,
+      "resident_components": [
+        6
+      ],
+      "visible_components": [
+        6
+      ],
+      "resident_texture_payload_bytes": 2097152,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.7269785,
+      "gpu_samples_ms": [
+        1.470624,
+        1.731958,
+        2.23325,
+        1.439458,
+        1.544583,
+        1.945916,
+        1.432374,
+        1.923416,
+        1.626541,
+        1.431624,
+        2.208999,
+        2.135499,
+        1.460916,
+        1.721999,
+        1.533291,
+        2.092291,
+        1.868291,
+        1.62075,
+        2.069999,
+        1.751333
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "block_1_hidden_others_resident",
+      "round": 3,
+      "resident_components": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 2097152,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "partition",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.6259575000000002,
+      "gpu_samples_ms": [
+        1.512875,
+        1.51125,
+        1.689041,
+        1.541749,
+        1.532875,
+        1.71025,
+        1.607374,
+        2.003374,
+        1.96975,
+        1.550166,
+        1.576083,
+        1.644541,
+        1.538624,
+        2.042999,
+        2.60175,
+        1.487125,
+        1.556625,
+        2.008249,
+        1.878625,
+        2.123166
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    },
+    {
+      "case": "monolith_same_roi_1",
+      "round": 3,
+      "resident_components": [
+        1
+      ],
+      "visible_components": [
+        1
+      ],
+      "resident_texture_payload_bytes": 16777216,
+      "visible_texture_payload_bytes": 16777216,
+      "dummy_texture_payload_bytes": 1,
+      "total_gpu_allocation_bytes": null,
+      "mode": "crop",
+      "downsample": 1,
+      "strategy": "spatial",
+      "gpu_median_ms": 1.6713740000000001,
+      "gpu_samples_ms": [
+        1.505958,
+        1.896416,
+        1.550416,
+        1.679499,
+        2.16525,
+        2.187124,
+        2.07175,
+        1.562166,
+        1.663249,
+        1.542083,
+        2.161999,
+        1.565708,
+        1.5545,
+        1.7285,
+        1.525541,
+        2.043791,
+        2.155374,
+        1.480249,
+        1.441041,
+        1.7045
+      ],
+      "cpu_submit_and_finish_median_ms": 0.19999998807907104,
+      "resolution": [
+        1280,
+        720
+      ],
+      "camera": [
+        90,
+        0,
+        1.8
+      ],
+      "step": 1,
+      "cutoff": 60
+    }
+  ]
+}

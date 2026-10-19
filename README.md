@@ -1,46 +1,26 @@
 # VolumeSegmenter
 
-An end-to-end proof of concept for extracting spatially mapped components from 3D uint8 volumes and rendering them independently in WebGL2.
+A proof of concept for **tightly cropped local volume blocks, original-space coordinates, and simultaneous or selective WebGL2 rendering**.
 
-The question is whether background removal, component extraction and explicit spatial metadata can form a usable browser rendering pipeline—and what data-size and quality trade-offs this introduces. This is an engineering feasibility study, not an anatomical segmentation model or a medical application.
+The current experiment asks:
 
-## What the experiment shows
+1. Is rendering one block faster than rendering the whole dataset?
+2. How do all-block and single-block rendering differ in GPU time and resident texture payload?
+3. Does hiding a block save memory, or must its texture be released?
 
-The original skull experiment produced **5.85 MiB from 16 MiB (63.5% smaller)**. Its code, metadata and file hashes are preserved under [experiments/legacy](experiments/legacy); the original component files remain in `skull/`. That result includes thresholding, morphological filtering and downsampling. It is not a lossless compression ratio.
+## Current design
 
-The corrected pipeline predicts a label for **every retained voxel**, exports coordinates and sampling spacing, and renders every component. The full-resolution reconstruction exactly matches the thresholded input on the included skull dataset. However, K-means partitions have overlapping bounding boxes containing zeros: writing each as a dense RAW array can increase storage substantially. Independent component rendering works; universal storage or rendering improvements are not established.
+The default extractor recursively divides space along axis-aligned planes, discards empty space and tightly crops each resulting block. Blocks have **disjoint bounding boxes**: each stores only its own local W×H×D array, with `origin_xyz` locating it in the original volume. The renderer uploads these local textures directly; it does not expand them to the original dimensions.
 
-### Controlled skull experiment
+At each split, the heuristic tries quarter/midpoint/three-quarter cuts along each axis and prefers the largest decrease in total stored bounding-box voxels. Ties favor balanced child sizes and smaller surface area. This is not a guarantee of the globally smallest possible partition. `--components` is an upper bound, not a requirement to fabricate extra components.
 
-256 × 256 × 256 uint8; threshold 13.621871; seed 42; eight clusters; spatial weight 0.5. MiB means 1,048,576 bytes. Results are raw payload sizes, excluding metadata and HTTP compression.
+At full resolution, the sum of block payloads cannot exceed the original uint8 volume. Every retained voxel is preserved exactly. This guarantee is relative to the **thresholded** input; background removal itself changes the original data. Optional decimation remains explicitly lossy.
 
-| Variant | Output MiB | Reduction vs input | MAE vs thresholded input | Missing retained voxels |
-| --- | ---: | ---: | ---: | ---: |
-| Original | 16.00 | 0% | 0¹ | 0 |
-| Background + whole bounding box | 16.00 | 0% | 0 | 0 |
-| Full-resolution partitions | 60.96 | −281.0% | 0 | 0 |
-| Partitions + 2× decimation per axis | 7.65 | 52.2% | 4.40 | 1,404,051 |
-| Whole bounding box + 2× decimation | 2.00 | 87.5% | 4.24 | 1,326,794 |
+On the included skull, the default threshold leaves nonzero data extending to block boundaries, so the eight blocks are each 128³ and total **16 MiB**, equal to the original. A single block is **2 MiB**. This corrects the previous K-means implementation's 60.96 MiB of overlapping bounding boxes. It does not claim a new full-volume compression gain where none exists.
 
-¹ The original row is compared to the original input. All processed rows use the same thresholded reference. MAE is measured over the entire original voxel grid in uint8 intensity units. The JSON report also includes error against the original input, introduced nonzero voxels and overlaps.
+## Run
 
-**Interpretation:** the current partitioning scheme enables selective display, but it does not beat simple decimation in size or reconstruction error on this dataset. Downsampling is a major contributor to size reduction. These negative results are part of the feasibility study, not hidden by choosing only the smallest output.
-
-[Machine-readable extraction report](experiments/results/skull-report.json) includes the input hash, environment, exact bytes, metrics and single-run processing times. These timings are illustrative, not statistical throughput claims. No peak-memory or network-transfer improvement is claimed.
-
-### Matched rendering comparison
-
-Same camera (X=90°, Y=0°, distance=1.8), step=1 original voxel unit, density cutoff=60, viewport and transfer function. Nearest sampling makes the mapping explicit; this cutoff hides low-density differences, so the numerical reconstruction metrics above remain essential.
-
-| Original | Full-resolution partitions | Decimated partitions |
-| --- | --- | --- |
-| ![Original volume](experiments/results/original.jpg) | ![Complete partitions](experiments/results/partition.jpg) | ![Decimated partitions](experiments/results/lossy.jpg) |
-
-Rendering measurements and verification details are in [experiments/results/VALIDATION.md](experiments/results/VALIDATION.md).
-
-## Reproduce
-
-Python 3.12+ and a WebGL2-capable browser are required. The recorded environment used Python 3.13.7 on macOS ARM64. The viewer has no npm dependencies or build step.
+Python 3.12+ and a WebGL2 browser:
 
 ```bash
 python3 -m venv .venv
@@ -51,85 +31,69 @@ python benchmark.py
 python -m http.server 8765 --bind 127.0.0.1
 ```
 
-On Windows, activate with `.venv\Scripts\activate`. Open [the local viewer](http://127.0.0.1:8765/webgl_volume_rendering.html) after the benchmark finishes. It generates five variants under `experiments/current/`, which is ignored by Git. Generated outputs are intentionally not duplicated in the repository. Existing results are never silently overwritten: for a rerun, use a fresh directory:
+On Windows use `.venv\Scripts\activate`. Open [the viewer](http://127.0.0.1:8765/webgl_volume_rendering.html).
 
-```bash
-python benchmark.py --output experiments/run2
-```
+The benchmark generates five variants under `experiments/spatial/`: original, background/crop, full-resolution spatial blocks, decimated blocks, and a decimated single-volume baseline. Existing outputs are never silently overwritten. To repeat use `python benchmark.py --output experiments/run2` and open `webgl_volume_rendering.html?base=./experiments/run2/`.
 
-Then open `webgl_volume_rendering.html?base=./experiments/run2/`. `requirements.txt` specifies compatible ranges; `requirements-lock.txt` records the tested versions. Pinning versions and limiting numerical libraries to one thread improves repeatability; bitwise equivalence across different platforms/library versions is not promised.
+### Viewer controls
 
-The schema-2 CLI replaces legacy `--max-components`, `--min-ratio` and `--max-ratio` controls with explicit `--components` and `--downsample` settings. It does not silently force a component count or file-size target. The old `UniversalVolumeSegmenter` class is preserved only in the legacy source.
+- **Load all components:** simultaneously render all local block textures.
+- **Only N:** show one block at its original position, without changing camera or resolution.
+- **Release unchecked textures** (default on): delete unselected GPU textures and unbind them. Selecting a released block fetches and uploads it again. Application CPU copies are not cached after upload; browser HTTP caching is separate.
+- With release **off**, unselected textures stay resident. Their rendering is disabled, but their payload remains in the memory counter. Turning release back on evicts unselected textures.
+- **Measure 60 frames:** measure the current selection/settings.
+- **Compare original / all / each block:** run three shuffled rounds of all cases at fixed settings, including hidden-but-resident and same-ROI monolithic controls.
+- **Download comparison JSON:** export per-frame GPU samples, per-round results, settings and texture byte accounting.
 
-### Process another volume
+The renderer marches only through the ray interval intersecting active blocks. It preserves the original volume's sampling lattice, camera and voxel scale when comparing selections. The active sampler list is compacted: one selected block means one active texture branch, not eight disabled checks per sample.
+
+### What “memory” means here
+
+The panel reports the **resident R8 texture payload**: the sum of stored voxel counts of textures owned by the application. It also records a one-byte dummy texture separately. Hiding seven blocks while retaining their textures still consumes all eight payloads; releasing them leaves one.
+
+This is exact application payload accounting, **not a measurement of total physical GPU memory**. Browser/driver allocation overhead, alignment, framebuffer storage, shader resources and deferred reclamation are excluded. Total GPU allocation is recorded as `null`, not invented from file size. Timing excludes download/upload and reconstruction.
+
+## Results and methodology
+
+See [the current experiment report](experiments/spatial-results/RESULTS.md), [extraction metrics](experiments/spatial-results/extraction.json) and [rendering measurements](experiments/spatial-results/rendering.json).
+
+The comparison uses full-resolution blocks without decimation: fixed 1280×720 drawing buffer, camera X=90°/Y=0°/distance=1.8, step=1 original voxel unit and cutoff=60. Each case has three rounds, five warm-up frames and 20 timed frames per round. Case order is shuffled with a fixed seed. GPU timings use timer queries and reject disjoint results; CPU submission timings are not mislabeled as GPU time or FPS.
+
+A single block shows less content than all blocks. To separate that effect from representation, the suite also compares block 1 with the **same region clipped from the thresholded monolithic volume**, at identical camera and sampling settings. Display cutoff 60 exceeds the extraction threshold, so the original/full-block visual comparison does not establish preservation of discarded low-intensity data.
+
+## Custom extraction
 
 ```bash
 python extractVolume.py --input input.raw --shape 320 240 128 \
-  --output experiments/custom --components 8 --seed 42 \
-  --spatial-weight 0.5 --downsample 1
+  --output experiments/custom --components 8 --threshold 20
 ```
 
-`--shape` is **X Y Z**. Files must contain exactly X×Y×Z bytes, uint8, X varying fastest. The NumPy array is Z,Y,X in C order. `--threshold 20` overrides the automatic intensity threshold. `--downsample 2` keeps every second voxel along each axis, without anti-aliasing; it is explicitly lossy and can remove thin structures. Use `--mode crop` for a single foreground bounding box, or `--mode original` for the unthresholded baseline.
+Open `webgl_volume_rendering.html?manifest=./experiments/custom/metadata.json`. The predefined dataset selector and multi-dataset comparison are disabled for custom manifests; individual measurement still works.
 
-Open `webgl_volume_rendering.html?manifest=./experiments/custom/metadata.json` to load custom output. The mode selector is disabled for a custom manifest. Component checkboxes control visibility; all components are currently downloaded and kept resident, so this does **not** implement streaming or GPU-memory savings from unloading.
+- Input is uint8 RAW, X varying fastest. CLI dimensions are **X Y Z**; NumPy arrays are **Z Y X**. File length must match exactly.
+- Omit `--threshold` for the seeded two-population intensity heuristic. This is not anatomical segmentation.
+- `--strategy spatial` is the default. `--strategy kmeans` retains the previous method for controlled comparison; it has no disjoint-box/storage guarantee. Spatial weights only affect K-means.
+- `--downsample 2` keeps every second voxel on every axis, without anti-aliasing. It can remove thin structures and is not lossless compression.
+- `--mode crop` generates a single foreground bounding box; `--mode original` skips thresholding.
 
-## Pipeline and design
+### Metadata schema 2
 
-```mermaid
-flowchart LR
- A[RAW uint8 + XYZ dimensions] --> B[Seeded background threshold]
- B --> C[Fit spatial/intensity K-means on sample]
- C --> D[Predict every retained voxel in batches]
- D --> E[Crop disjoint labels into dense components]
- E --> F[Optional explicit decimation]
- F --> G[RAW files + spatial metadata]
- G --> H[WebGL2 full or selective rendering]
- G --> I[CPU reconstruction and error metrics]
-```
+Each component records:
 
-- K-means explores spatial/intensity grouping without claiming semantic or anatomical regions. Features are standardized **before** applying their weights; weights therefore have an effect.
-- Sampling limits the training set to 30,000 foreground voxels. Prediction covers all retained voxels in batches; unsampled points are not dropped.
-- Each retained voxel has one label before decimation. The implementation avoids dilation and synthetic extra components, which previously obscured coverage and overlap. Empty input produces zero components.
-- Dense component bounding boxes may overlap even when their nonzero voxels are disjoint. Decimation followed by block reconstruction can introduce nonzero overlaps; CPU and GPU both merge these using maximum intensity. Metrics report them explicitly.
-- The viewer uses a deterministic, single-pass front-to-back emission/absorption ray march, starting at the whole-volume ray entry. It does not use the old frame accumulation or claim physical path tracing. Every supported sampler has a branch, and texture limits are checked.
+| Field | Meaning |
+| --- | --- |
+| `dimensions_xyz` | Stored local texture width, height, depth |
+| `origin_xyz` | Local box origin in original voxel coordinates |
+| `extent_xyz` | Exclusive spatial extent before decimation |
+| `spacing_xyz` | Sample spacing in original voxel units; `[1,1,1]` at full resolution |
+| `bytes`, `sha256` | Payload size and reproducibility hash |
 
-### Metadata contract (schema 2)
+For a world point `p`, local sample index is `floor((p-origin)/spacing)`. Reconstruction clips the last sample block to `extent_xyz`. The manifest also retains original volume dimensions, input hash, parameters and processing time. No physical millimeter spacing or rotation is claimed.
 
-All spatial metadata is XYZ, in original voxel units. There is no physical millimeter spacing or rotation support in this version.
+## Validation and limits
 
-```json
-{
-  "schema_version": 2,
-  "dtype": "uint8",
-  "dimensions_xyz": [320, 240, 128],
-  "components": [{
-    "file": "component_1.raw",
-    "dimensions_xyz": [5, 4, 4],
-    "origin_xyz": [4, 3, 2],
-    "spacing_xyz": [2, 2, 2],
-    "extent_xyz": [9, 7, 7]
-  }]
-}
-```
+Tests cover non-cubic/boundary coordinates, tight disjoint boxes, storage budgets, exact reconstruction, empty/tiny inputs, deterministic output, explicit decimation and input validation. The spatial algorithm is deterministic; numerical libraries are limited to one thread for background/K-means repeatability. Cross-platform/library bitwise equivalence is not promised.
 
-`extent_xyz` is the exclusive original-space extent, **not** the stored sample count. The last reconstructed block is clipped to that extent. A world point `p` inside the component maps to sample index `floor((p - origin) / spacing)`. This convention is shared by the CPU reconstruction and nearest-sampled renderer. The real manifest also includes byte counts, hashes, parameters and processing time.
+Only one real dataset plus synthetic fixtures has been tested. The extractor is not out of core and has no proven peak-RAM ceiling. The viewer supports at most 15 components, device texture limits and 8,192 steps per ray. Nearest sampling is used for an explicit CPU/GPU mapping. More blocks, streaming and adaptive resolution need separate experiments.
 
-## Scope and limitations
-
-- One real dataset and synthetic correctness fixtures have been tested; generality across CT/MRI or scientific datasets is unproven.
-- Background estimation is an intensity heuristic, not a guarantee of structural preservation. No morphology is applied in the corrected path; its output is intentionally different from the legacy experiment.
-- The extractor loads the full input and allocates foreground indices and labels. It is not an out-of-core solution and has no verified RAM ceiling for large inputs.
-- At most 15 components are supported by this viewer, further limited by device texture capabilities. This is an implementation constraint, not a universal WebGL limit. Rays are limited to 8,192 steps.
-- Nearest sampling and naive decimation prioritize a clear reference implementation over visual smoothness. Quality improvements need separate, controlled measurements.
-- Next experiments: spatial bricks versus K-means, lossless byte compression, more datasets, and actual selective loading. None are claimed as completed.
-
-## Repository map
-
-- `extractVolume.py`: extraction, schema generation and CPU reconstruction.
-- `benchmark.py`: five controlled extraction variants and metrics.
-- `viewer.js` / `webgl_volume_rendering.html`: metadata-driven WebGL2 viewer.
-- `tests/test_pipeline.py`: exact reconstruction, boundaries, non-cubic coordinates, empty/tiny data, coverage beyond the training sample, weights and reproducibility.
-- `experiments/results/`: measured results and screenshots.
-- `experiments/legacy/`: unmodified historical source, README, metadata and inventory. Legacy relative asset URLs expect the old repository-root layout; use Git revision `01fcf00` to run that version directly.
-
-The included skull data and historical images predate this revision. No new dataset provenance or license grant is asserted here; the earlier README's MIT badge did not have a corresponding license file.
+Historical experiments remain under `experiments/results/` (the earlier K-means implementation) and `experiments/legacy/` (original source/metadata). Their timings use a different renderer/resolution and must not be compared directly with the current report. The original `skull/` RAW files and historical screenshots remain unchanged. No new dataset provenance or license grant is asserted.

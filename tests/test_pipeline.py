@@ -33,8 +33,37 @@ class PipelineTests(unittest.TestCase):
 
     def test_predicts_unsampled_foreground(self):
         data = np.random.default_rng(21).integers(1, 255, (35, 36, 37), dtype=np.uint8)
-        _, result, coverage = self.run_volume(data, threshold=0)
+        _, result, coverage = self.run_volume(data, threshold=0, strategy='kmeans')
         np.testing.assert_array_equal(data, result)
+        self.assertTrue(np.all(coverage == 1))
+
+    def test_spatial_storage_budget_and_boxes(self):
+        for seed in range(3):
+            data = np.zeros((19, 23, 31), dtype=np.uint8)
+            rng = np.random.default_rng(seed)
+            data[2:8, 1:7, 3:10] = rng.integers(1, 255, (6, 6, 7), dtype=np.uint8)
+            data[12:18, 17:22, 23:30] = 200
+            meta, restored, coverage = self.run_volume(data, f'sparse{seed}', threshold=0)
+            self.assertLess(meta['output_bytes'], data.nbytes)
+            boxes = np.zeros(data.shape, dtype=np.uint8)
+            for c in meta['components']:
+                o, e = c['origin_xyz'][::-1], c['extent_xyz'][::-1]
+                region = tuple(slice(a, a + n) for a, n in zip(o, e))
+                boxes[region] += 1
+                self.assertEqual(c['dimensions_xyz'], c['extent_xyz'])
+                block = restored[region]
+                for axis in range(3):
+                    self.assertTrue(np.any(np.take(block, 0, axis=axis)))
+                    self.assertTrue(np.any(np.take(block, -1, axis=axis)))
+            self.assertLessEqual(int(boxes.max()), 1)
+            np.testing.assert_array_equal(restored, data)
+            np.testing.assert_array_equal(coverage, data > 0)
+
+    def test_dense_spatial_budget(self):
+        data = np.full((13, 15, 17), 190, dtype=np.uint8)
+        meta, restored, coverage = self.run_volume(data, threshold=0)
+        self.assertEqual(meta['output_bytes'], data.nbytes)
+        np.testing.assert_array_equal(restored, data)
         self.assertTrue(np.all(coverage == 1))
 
     def test_seed_reproducibility(self):
@@ -76,8 +105,8 @@ class PipelineTests(unittest.TestCase):
     def test_weights_affect_partition(self):
         z, y, x = np.indices((12, 13, 14))
         data = np.where(x % 2, 210, 40).astype(np.uint8)
-        spatial, _, _ = self.run_volume(data, 'spatial', threshold=0, components=2, spatial_weight=1)
-        intensity, _, _ = self.run_volume(data, 'intensity', threshold=0, components=2, spatial_weight=0)
+        spatial, _, _ = self.run_volume(data, 'spatial', threshold=0, components=2, spatial_weight=1, strategy="kmeans")
+        intensity, _, _ = self.run_volume(data, 'intensity', threshold=0, components=2, spatial_weight=0, strategy="kmeans")
         self.assertNotEqual(spatial['components'], intensity['components'])
 
     def test_reject_bad_input_and_existing_output(self):
