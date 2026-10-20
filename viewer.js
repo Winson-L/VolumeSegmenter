@@ -140,7 +140,7 @@ function lock(on) {
     for (const element of document.querySelectorAll('input,select,button')) element.disabled = on;
     if (!on) {
         $('dataset').disabled = !!customManifest;
-        $('compare').disabled = !!customManifest || study;
+        $('compare').disabled = !!customManifest;
         $('download').disabled = !suite;
     }
 }
@@ -289,13 +289,26 @@ async function action(fn) {
 }
 async function compare() {
     suite = null; $('download').disabled = true; $('report').textContent = '';
-    const partition = await (await fetchOK(new URL('partition/metadata.json', base))).json();
+    const partition = await (await fetchOK(new URL(`${study ? 'focused' : 'partition'}/metadata.json`, base))).json();
     validate(partition);
     if (partition.parameters.downsample !== 1 || partition.parameters.strategy !== 'spatial') throw Error('Comparison requires full-resolution spatial partitions. Regenerate benchmark output.');
     const cases = [ {name: 'original', dataset: 'original'}, {name: 'all_blocks', dataset: 'partition'},
         ...partition.components.map((c, i) => ({name: `block_${i + 1}`, dataset: 'partition', indices: [i]})),
         {name: 'block_1_hidden_others_resident', dataset: 'partition', indices: [0], keepAll: true},
         {name: 'monolith_same_roi_1', dataset: 'crop', roi: partition.components[0]} ];
+    if (study) {
+        cases.splice(0, cases.length, {name: 'original', dataset: 'original'});
+        for (const name of ['threshold', 'conservative', 'focused', 'opening', 'legacy_cleanup', 'aggressive', 'focused_decimated']) {
+            const m = await (await fetchOK(new URL(`${name}/metadata.json`, base))).json(); validate(m);
+            cases.push({name: `${name}/all`, dataset: name});
+            for (let i = 0; i < m.components.length; i++) {
+                cases.push({name: `${name}/block_${i + 1}`, dataset: name, indices: [i]});
+                if (m.parameters.downsample === 1) cases.push({name: `${name}/monolith_roi_${i + 1}`, dataset: `${name}_monolith`, roi: m.components[i]});
+            }
+            cases.push({name: `${name}/hidden_others_resident`, dataset: name, indices: [0], keepAll: true});
+            if (m.parameters.downsample === 1) cases.push({name: `${name}/monolith_all`, dataset: `${name}_monolith`});
+        }
+    }
     const runs = [], order = [];
     fixedResolution = [1280, 720];
     const old = ['rx', 'ry', 'zoom', 'step', 'cutoff'].map(id => $(id).value);
@@ -315,7 +328,7 @@ async function compare() {
                 lock(true); clip = c.roi || null;
                 status(`Round ${round + 1}/3 · ${c.name}`);
                 const result = await measureFrames(20);
-                runs.push({case: c.name, round: round + 1, ...result}); order.push(c.name);
+                runs.push({case: c.name, dataset: c.dataset, input_sha256: meta.input_sha256, parameters: meta.parameters, components: meta.components, roi: c.roi || null, round: round + 1, ...result}); order.push(c.name);
             }
         }
         const results = cases.map(c => {
@@ -327,7 +340,7 @@ async function compare() {
         });
         suite = {schema_version: 1, input_sha256: partition.input_sha256, partition_components: partition.components,
             environment: {user_agent: navigator.userAgent, renderer: gl.getParameter(gl.RENDERER)},
-            methodology: 'Three seeded-shuffled rounds, five warmups and 20 timed frames per case per round; fixed 1280x720, camera 90/0/1.8, step 1, cutoff 60. Upload and network time excluded. Texture payload is R8 voxel bytes, NOT measured total VRAM. Single blocks show less content; monolith_same_roi_1 is the matched-content control. CPU buffers are not cached by this app. Driver memory reclamation may be deferred.',
+            methodology: 'Three seeded-shuffled rounds, five warmups and 20 timed frames per case per round; fixed 1280x720, camera 90/0/1.8, step 1, cutoff 60. Upload and network time excluded. Texture payload is R8 voxel bytes, NOT measured total VRAM. Single blocks show less content; Monolith ROI cases use the identical selected full-resolution data and block bounds; decimated cases have no matched ROI control. CPU buffers are not cached by this app. Driver memory reclamation may be deferred.',
             results, order, runs};
         $('report').textContent = JSON.stringify(suite, null, 2);
         status(JSON.stringify({results}, null, 2));
@@ -335,7 +348,7 @@ async function compare() {
         fixedResolution = null; clip = null;
         old.forEach((value, i) => { $(['rx', 'ry', 'zoom', 'step', 'cutoff'][i]).value = value; });
         const report = suite;
-        await loadVariant('partition');
+        await loadVariant(study ? 'focused' : 'partition');
         if (report) status(JSON.stringify({results: report.results}, null, 2));
     }
 }
@@ -348,7 +361,7 @@ $('compare').onclick = () => action(compare);
 $('download').onclick = () => {
     if (!suite) return;
     const url = URL.createObjectURL(new Blob([JSON.stringify(suite, null, 2)], {type: 'application/json'}));
-    const a = document.createElement('a'); a.href = url; a.download = 'spatial-render-comparison.json'; document.body.append(a); a.click(); a.remove();
+    const a = document.createElement('a'); a.href = url; a.download = study ? 'foreground-render-comparison.json' : 'spatial-render-comparison.json'; document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 window.addEventListener('resize', () => { if (!loading) draw(); });

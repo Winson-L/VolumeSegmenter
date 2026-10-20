@@ -26,6 +26,8 @@ def run(source, shape, output):
     rows = []
     for name, options in variants:
         meta = extract(source, output / name, shape, **options)
+        if name != 'original' and options.get('downsample', 1) == 1:
+            extract(source, output / (name + '_monolith'), shape, **{**options, 'mode': 'crop'})
         restored, coverage = reconstruct(output / name)
         p = meta['parameters']
         mask, _ = select_foreground(original, p['threshold'], p['cleanup'], p['min_region_voxels'])

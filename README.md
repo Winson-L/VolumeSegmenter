@@ -20,7 +20,7 @@ On the included skull, the default threshold leaves nonzero data extending to bl
 
 ## Foreground selection experiment
 
-To remove unwanted regions before tight cropping, run `python foreground_study.py`, then open [the foreground viewer](http://127.0.0.1:8765/webgl_volume_rendering.html?study=foreground) with the local server running. The viewer supports all blocks and individual blocks for each preset. Use a fresh `--output` directory to repeat; pass its path as `&base=./experiments/run2/` in the viewer URL.
+To remove unwanted regions before tight cropping, run `python foreground_study.py`, then open [the foreground viewer](http://127.0.0.1:8765/webgl_volume_rendering.html?study=foreground) with the local server running. The viewer supports all blocks and individual blocks for each preset. Its Compare button measures all seven presets, every block, matched full-resolution monolith ROI controls and hidden-but-resident controls (125 cases, three rounds). See [complete performance results](experiments/foreground-results/PERFORMANCE.md). Use a fresh `--output` directory to repeat; pass its path as `&base=./experiments/run2/` in the viewer URL.
 
 On this skull, threshold 30 plus removal of six-connected regions smaller than 512 voxels yields **14.43 MiB**; threshold 60 with the same region filter yields **11.58 MiB**, without downsampling. These are heuristic selections, not proof that every discarded voxel is noise. See [selection results and losses](experiments/foreground-results/RESULTS.md). The default extractor remains an unfiltered control so comparisons stay explicit.
 
