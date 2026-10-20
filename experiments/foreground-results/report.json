@@ -1,0 +1,338 @@
+{
+  "input_sha256": "3903c8fcb217edc141eed698e9c8c5afe4070f914e9c65687f2b6ca5e8e08b7d",
+  "dimensions_xyz": [
+    256,
+    256,
+    256
+  ],
+  "original_bytes": 16777216,
+  "environment": {
+    "python": "3.13.7 (main, Aug 14 2025, 11:12:11) [Clang 17.0.0 (clang-1700.0.13.3)]",
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  },
+  "methodology": "Same original voxel grid and at most eight disjoint cropped boxes. Selection losses and reconstruction losses are separate. Intensity survival is a proxy, not anatomical accuracy. Legacy cleanup audits border removal and erosion, not a reconstruction of the historical 5.85 MiB outputs whose per-component spacing was not recorded.",
+  "variants": [
+    {
+      "name": "original",
+      "parameters": {
+        "mode": "original",
+        "threshold": 0.0,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 1,
+        "strategy": "spatial",
+        "cleanup": "none",
+        "min_region_voxels": 512
+      },
+      "output_bytes": 16777216,
+      "reduction_percent": 0.0,
+      "component_count": 1,
+      "selection_metrics": {
+        "threshold_nonzero": 14834427,
+        "retained_nonzero": 14834427,
+        "cleanup_removed_voxels": 0,
+        "regions_before": null,
+        "regions_after": null,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 0,
+            "retained_fraction": 1.0
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 0,
+            "retained_fraction": 1.0
+          }
+        }
+      },
+      "reconstruction_matches_selected": true,
+      "mae_vs_selected": 0.0,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 0.06537083303555846
+    },
+    {
+      "name": "threshold",
+      "parameters": {
+        "mode": "partition",
+        "threshold": 13.621871,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 1,
+        "strategy": "spatial",
+        "cleanup": "none",
+        "min_region_voxels": 512
+      },
+      "output_bytes": 16777216,
+      "reduction_percent": 0.0,
+      "component_count": 8,
+      "selection_metrics": {
+        "threshold_nonzero": 7334883,
+        "retained_nonzero": 7334883,
+        "cleanup_removed_voxels": 0,
+        "regions_before": null,
+        "regions_after": null,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 0,
+            "retained_fraction": 1.0
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 0,
+            "retained_fraction": 1.0
+          }
+        }
+      },
+      "reconstruction_matches_selected": true,
+      "mae_vs_selected": 0.0,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 0.5970196249545552
+    },
+    {
+      "name": "legacy_cleanup",
+      "parameters": {
+        "mode": "partition",
+        "threshold": 13.621871,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 1,
+        "strategy": "spatial",
+        "cleanup": "legacy",
+        "min_region_voxels": 512
+      },
+      "output_bytes": 15107447,
+      "reduction_percent": 9.952598810195923,
+      "component_count": 8,
+      "selection_metrics": {
+        "threshold_nonzero": 7334883,
+        "retained_nonzero": 2092900,
+        "cleanup_removed_voxels": 5241983,
+        "regions_before": null,
+        "regions_after": null,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 48429,
+            "retained_fraction": 0.9037573753420628
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 3948,
+            "retained_fraction": 0.8886946715534254
+          }
+        }
+      },
+      "reconstruction_matches_selected": true,
+      "mae_vs_selected": 0.0,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 0.6702502500265837
+    },
+    {
+      "name": "opening",
+      "parameters": {
+        "mode": "partition",
+        "threshold": 13.621871,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 1,
+        "strategy": "spatial",
+        "cleanup": "opening",
+        "min_region_voxels": 512
+      },
+      "output_bytes": 16447744,
+      "reduction_percent": 1.96380615234375,
+      "component_count": 8,
+      "selection_metrics": {
+        "threshold_nonzero": 7334883,
+        "retained_nonzero": 4390068,
+        "cleanup_removed_voxels": 2944815,
+        "regions_before": 2227,
+        "regions_after": 96,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 673,
+            "retained_fraction": 0.9986625516447832
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 50,
+            "retained_fraction": 0.9985903580490555
+          }
+        }
+      },
+      "reconstruction_matches_selected": true,
+      "mae_vs_selected": 0.0,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 1.0311831669532694
+    },
+    {
+      "name": "conservative",
+      "parameters": {
+        "mode": "partition",
+        "threshold": 30.0,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 1,
+        "strategy": "spatial",
+        "cleanup": "connected",
+        "min_region_voxels": 512
+      },
+      "output_bytes": 15127714,
+      "reduction_percent": 9.831798076629639,
+      "component_count": 8,
+      "selection_metrics": {
+        "threshold_nonzero": 1569657,
+        "retained_nonzero": 1532727,
+        "cleanup_removed_voxels": 36930,
+        "regions_before": 9370,
+        "regions_after": 17,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 268,
+            "retained_fraction": 0.9994674054098097
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 5,
+            "retained_fraction": 0.9998590358049055
+          }
+        }
+      },
+      "reconstruction_matches_selected": true,
+      "mae_vs_selected": 0.0,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 0.652617082989309
+    },
+    {
+      "name": "focused",
+      "parameters": {
+        "mode": "partition",
+        "threshold": 60.0,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 1,
+        "strategy": "spatial",
+        "cleanup": "connected",
+        "min_region_voxels": 512
+      },
+      "output_bytes": 12139893,
+      "reduction_percent": 27.640599012374878,
+      "component_count": 8,
+      "selection_metrics": {
+        "threshold_nonzero": 503197,
+        "retained_nonzero": 483609,
+        "cleanup_removed_voxels": 19588,
+        "regions_before": 2933,
+        "regions_after": 17,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 19588,
+            "retained_fraction": 0.9610728998781789
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 61,
+            "retained_fraction": 0.9982802368198478
+          }
+        }
+      },
+      "reconstruction_matches_selected": true,
+      "mae_vs_selected": 0.0,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 0.6015536250197329
+    },
+    {
+      "name": "aggressive",
+      "parameters": {
+        "mode": "partition",
+        "threshold": 90.0,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 1,
+        "strategy": "spatial",
+        "cleanup": "connected",
+        "min_region_voxels": 128
+      },
+      "output_bytes": 6770272,
+      "reduction_percent": 59.646034240722656,
+      "component_count": 8,
+      "selection_metrics": {
+        "threshold_nonzero": 121885,
+        "retained_nonzero": 116677,
+        "cleanup_removed_voxels": 5208,
+        "regions_before": 927,
+        "regions_after": 32,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 386520,
+            "retained_fraction": 0.23187141417774748
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 63,
+            "retained_fraction": 0.99822385114181
+          }
+        }
+      },
+      "reconstruction_matches_selected": true,
+      "mae_vs_selected": 0.0,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 0.6090644590440206
+    },
+    {
+      "name": "focused_decimated",
+      "parameters": {
+        "mode": "partition",
+        "threshold": 60.0,
+        "seed": 42,
+        "components": 8,
+        "spatial_weight": 0.5,
+        "downsample": 2,
+        "strategy": "spatial",
+        "cleanup": "connected",
+        "min_region_voxels": 512
+      },
+      "output_bytes": 1525119,
+      "reduction_percent": 90.9095823764801,
+      "component_count": 8,
+      "selection_metrics": {
+        "threshold_nonzero": 503197,
+        "retained_nonzero": 483609,
+        "cleanup_removed_voxels": 19588,
+        "regions_before": 2933,
+        "regions_after": 17,
+        "intensity_survival": {
+          "60": {
+            "original_voxels": 503197,
+            "removed_voxels": 19588,
+            "retained_fraction": 0.9610728998781789
+          },
+          "120": {
+            "original_voxels": 35470,
+            "removed_voxels": 61,
+            "retained_fraction": 0.9982802368198478
+          }
+        }
+      },
+      "reconstruction_matches_selected": false,
+      "mae_vs_selected": 0.9559332728385925,
+      "overlapping_nonzero_voxels": 0,
+      "total_processing_seconds": 0.5966443750075996
+    }
+  ]
+}

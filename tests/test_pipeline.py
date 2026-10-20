@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 import numpy as np
-from extractVolume import extract, read_volume, reconstruct
+from extractVolume import extract, read_volume, reconstruct, select_foreground
 
 
 class PipelineTests(unittest.TestCase):
@@ -65,6 +65,35 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(meta['output_bytes'], data.nbytes)
         np.testing.assert_array_equal(restored, data)
         self.assertTrue(np.all(coverage == 1))
+
+    def test_connected_cleanup_preserves_thin_branch_and_boundary(self):
+        data = np.zeros((15, 17, 19), dtype=np.uint8)
+        data[0:4, 3:7, 2:6] = 180
+        data[2, 5, 6:15] = 170  # Thin branch connected to the retained region.
+        data[13, 15, 17] = 230  # Bright but isolated: report, do not call it noise.
+        meta, result, coverage = self.run_volume(data, threshold=60, cleanup='connected', min_region_voxels=10)
+        expected = data.copy(); expected[13, 15, 17] = 0
+        np.testing.assert_array_equal(result, expected)
+        self.assertEqual(meta['foreground_metrics']['cleanup_removed_voxels'], 1)
+        self.assertEqual(meta['foreground_metrics']['intensity_survival']['120']['removed_voxels'], 1)
+        self.assertLess(meta['output_bytes'], data.nbytes)
+
+    def test_cleanup_connectivity_and_empty_mask(self):
+        data = np.zeros((5, 6, 7), dtype=np.uint8)
+        data[1, 1, 1] = data[2, 2, 2] = 200
+        mask, metrics = select_foreground(data, 60, 'connected', 2)
+        self.assertFalse(mask.any())  # Diagonal contact is not six-connected.
+        self.assertEqual(metrics['regions_before'], 2)
+        self.assertEqual(metrics['regions_after'], 0)
+        with self.assertRaises(ValueError):
+            select_foreground(data, 60, 'connected', 0)
+
+    def test_opening_exposes_loss_of_thin_structures(self):
+        data = np.zeros((11, 13, 15), dtype=np.uint8)
+        data[5, 6, 2:12] = 200
+        mask, metrics = select_foreground(data, 60, 'opening', 1)
+        self.assertFalse(mask.any())
+        self.assertEqual(metrics['intensity_survival']['120']['removed_voxels'], 10)
 
     def test_seed_reproducibility(self):
         data = np.random.default_rng(8).integers(0, 255, (15, 17, 23), dtype=np.uint8)

@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from scipy import ndimage as ndi
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from threadpoolctl import threadpool_limits
@@ -35,6 +36,53 @@ def background_threshold(volume, seed=42):
         return 0.0  # Keep constant-valued foreground, including tiny fixtures.
     model = KMeans(n_clusters=2, n_init=3, random_state=seed).fit(sample[:, None])
     return round(float(model.cluster_centers_.min()), 6)
+
+
+def select_foreground(volume, threshold, cleanup='none', min_region_voxels=512):
+    """Explicit intensity/size heuristics, not a semantic definition of importance.
+
+    Connected filtering preserves all voxels of retained six-connected regions,
+    including thin branches. Opening removes thin features. Legacy reproduces
+    the original three-voxel border removal and background dilation for audit.
+    """
+    if cleanup not in ('none', 'connected', 'opening', 'legacy'):
+        raise ValueError('Unknown cleanup method')
+    if not isinstance(min_region_voxels, int) or min_region_voxels < 1:
+        raise ValueError('Minimum region size must be a positive integer')
+    mask = volume > threshold
+    threshold_count = int(mask.sum())
+    regions_before = regions_after = None
+    if cleanup == 'legacy':
+        margin = min(3, min(volume.shape) // 10)
+        if margin:
+            for axis in range(3):
+                edge = [slice(None)] * 3
+                edge[axis] = slice(0, margin)
+                mask[tuple(edge)] = False
+                edge[axis] = slice(-margin, None)
+                mask[tuple(edge)] = False
+        if min(volume.shape) > 10:
+            mask = ndi.binary_erosion(mask, structure=np.ones((3, 3, 3)))
+    elif cleanup in ('connected', 'opening'):
+        if cleanup == 'opening':
+            mask = ndi.binary_opening(mask, structure=np.ones((3, 3, 3)))
+        labels, regions_before = ndi.label(mask)  # Six-neighbor connectivity.
+        sizes = np.bincount(labels.ravel())
+        keep = sizes >= min_region_voxels
+        keep[0] = False
+        mask = keep[labels]
+        regions_after = int(keep.sum())
+    metrics = dict(threshold_nonzero=threshold_count, retained_nonzero=int(mask.sum()),
+                   cleanup_removed_voxels=threshold_count - int(mask.sum()),
+                   regions_before=regions_before, regions_after=regions_after,
+                   intensity_survival={})
+    for level in (60, 120):
+        reference = volume > level
+        count = int(reference.sum())
+        removed = int(np.count_nonzero(reference & ~mask))
+        metrics['intensity_survival'][str(level)] = dict(original_voxels=count,
+            removed_voxels=removed, retained_fraction=(count - removed) / count if count else None)
+    return mask, metrics
 
 
 def kmeans_partition(volume, components=8, seed=42, spatial_weight=0.5, batch_size=100000):
@@ -123,9 +171,12 @@ def spatial_partition(volume, components=8):
 
 @threadpool_limits.wrap(limits=1)
 def extract(input_path, output_dir, shape_xyz, *, mode='partition', threshold=None,
-            components=8, seed=42, spatial_weight=0.5, downsample=1, strategy="spatial"):
+            components=8, seed=42, spatial_weight=0.5, downsample=1, strategy="spatial",
+            cleanup="none", min_region_voxels=512):
     if strategy not in ('spatial', 'kmeans'):
         raise ValueError('Unknown partition strategy')
+    if mode == 'original' and cleanup != 'none':
+        raise ValueError('Original mode does not accept foreground cleanup')
     if mode not in ('original', 'crop', 'partition'):
         raise ValueError('Unknown mode')
     if not 1 <= components <= 15 or not 0 <= spatial_weight <= 1 or downsample < 1 or int(downsample) != downsample:
@@ -139,9 +190,8 @@ def extract(input_path, output_dir, shape_xyz, *, mode='partition', threshold=No
     start = time.perf_counter()
     original = read_volume(input_path, shape_xyz)
     cutoff = 0.0 if mode == 'original' else (background_threshold(original, seed) if threshold is None else float(threshold))
-    retained = original.copy()
-    if mode != 'original':
-        retained[retained <= cutoff] = 0
+    mask, foreground_metrics = select_foreground(original, cutoff, cleanup, min_region_voxels)
+    retained = np.where(mask, original, 0).astype(np.uint8)
     if mode == 'partition':
         labels = (spatial_partition(retained, components) if strategy == 'spatial'
                   else kmeans_partition(retained, components, seed, spatial_weight))
@@ -170,7 +220,9 @@ def extract(input_path, output_dir, shape_xyz, *, mode='partition', threshold=No
                     input_file=Path(input_path).name, input_sha256=hashlib.sha256(original.tobytes()).hexdigest(),
                     dimensions_xyz=list(shape_xyz), original_bytes=original.nbytes,
                     parameters=dict(mode=mode, threshold=cutoff, seed=seed, components=components,
-                                    spatial_weight=spatial_weight, downsample=downsample, strategy=strategy),
+                                    spatial_weight=spatial_weight, downsample=downsample, strategy=strategy,
+                                    cleanup=cleanup, min_region_voxels=min_region_voxels),
+                    foreground_metrics=foreground_metrics,
                     original_nonzero=int(np.count_nonzero(original)), retained_nonzero=int(np.count_nonzero(retained)),
                     components=records, output_bytes=sum(c['bytes'] for c in records),
                     processing_seconds=time.perf_counter() - start,
@@ -205,6 +257,8 @@ def main():
     parser.add_argument('--shape', type=int, nargs=3, required=True, metavar=('X', 'Y', 'Z'))
     parser.add_argument('--mode', choices=['original', 'crop', 'partition'], default='partition')
     parser.add_argument('--strategy', choices=['spatial', 'kmeans'], default='spatial')
+    parser.add_argument('--cleanup', choices=['none', 'connected', 'opening', 'legacy'], default='none')
+    parser.add_argument('--min-region-voxels', type=int, default=512)
     parser.add_argument('--threshold', type=float)
     parser.add_argument('--components', type=int, default=8)
     parser.add_argument('--seed', type=int, default=42)

@@ -17,12 +17,12 @@ body{margin:0;background:#111820;color:#e2eaf3;font:14px system-ui}canvas{displa
 <label>Density cutoff (0–255) <input id="cutoff" type="range" min="0" max="254" value="60"></label>
 <label><input id="release" type="checkbox" checked> Release unchecked textures</label>
 <button id="all">Load all components</button>
-<div id="components"></div><p id="memory"></p>
+<div id="components"></div><p id="memory"></p><p id="selection"></p>
 <button id="measure">Measure 60 frames</button>
 <button id="compare">Compare original / all / each block</button>
 <button id="download" disabled>Download comparison JSON</button><p id="status">Loading…</p>
 <details><summary>Full measurement JSON</summary><pre id="report" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>
 <small>Nearest voxel sampling; max density in overlaps. Identical camera, transfer function and steps across modes. Texture payload excludes driver allocation and framebuffers. Timing excludes loading.</small>
 </aside>
-<script type="module" src="viewer.js?v=spatial-2"></script>
+<script type="module" src="viewer.js?v=foreground-1"></script>
 </html>

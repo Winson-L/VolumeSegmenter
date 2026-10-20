@@ -99,7 +99,20 @@ gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
 let textures = new Map(), meta = null, manifest = null, visible = [];
 let loading = false, measuring = false, suite = null, clip = null;
 let fixedResolution = null;
-const base = new URL(new URLSearchParams(location.search).get('base') || './experiments/spatial/', location.href);
+const study = new URLSearchParams(location.search).get('study') === 'foreground';
+const base = new URL(new URLSearchParams(location.search).get('base') || (study ? './experiments/foreground/' : './experiments/spatial/'), location.href);
+if (study) {
+    const variants = [['original', 'Original'], ['threshold', 'Automatic threshold only'],
+        ['conservative', 'Conservative · threshold 30 + region filter'],
+        ['focused', 'Focused · threshold 60 + region filter'],
+        ['opening', 'Opening · automatic threshold'], ['legacy_cleanup', 'Legacy erosion · automatic threshold'],
+        ['aggressive', 'Aggressive · threshold 90 + region filter'],
+        ['focused_decimated', 'Focused · 2× decimation control']];
+    $('dataset').replaceChildren(...variants.map(([value, text]) => {
+        const option = document.createElement('option'); option.value = value; option.textContent = text;
+        option.selected = value === 'focused'; return option;
+    }));
+}
 const customManifest = new URLSearchParams(location.search).get('manifest');
 const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
 const median = values => {
@@ -127,7 +140,7 @@ function lock(on) {
     for (const element of document.querySelectorAll('input,select,button')) element.disabled = on;
     if (!on) {
         $('dataset').disabled = !!customManifest;
-        $('compare').disabled = !!customManifest;
+        $('compare').disabled = !!customManifest || study;
         $('download').disabled = !suite;
     }
 }
@@ -212,6 +225,10 @@ async function loadVariant(name, indices = null, keepAll = false) {
         option.textContent = `Custom · ${next.parameters.mode} · ${next.parameters.downsample}×`;
         $('dataset').replaceChildren(option);
     } else $('dataset').value = name;
+    const survival = next.foreground_metrics?.intensity_survival?.['60'];
+    $('selection').textContent = next.parameters.cleanup && next.parameters.cleanup !== 'none'
+        ? `Threshold ${next.parameters.threshold}; ${next.parameters.cleanup}; min region ${next.parameters.min_region_voxels} voxels. Removed ${survival?.removed_voxels ?? '?'} original voxels above intensity 60. This is a selection heuristic, not an anatomical guarantee.`
+        : `Threshold ${next.parameters.threshold}; no structural cleanup.`;
     status(`${next.components.length} blocks · ${(next.output_bytes / 1048576).toFixed(2)} MiB total payload`);
 }
 function draw() {

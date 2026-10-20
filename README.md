@@ -14,9 +14,15 @@ The default extractor recursively divides space along axis-aligned planes, disca
 
 At each split, the heuristic tries quarter/midpoint/three-quarter cuts along each axis and prefers the largest decrease in total stored bounding-box voxels. Ties favor balanced child sizes and smaller surface area. This is not a guarantee of the globally smallest possible partition. `--components` is an upper bound, not a requirement to fabricate extra components.
 
-At full resolution, the sum of block payloads cannot exceed the original uint8 volume. Every retained voxel is preserved exactly. This guarantee is relative to the **thresholded** input; background removal itself changes the original data. Optional decimation remains explicitly lossy.
+At full resolution, the sum of block payloads cannot exceed the original uint8 volume. Every retained voxel is preserved exactly. This guarantee is relative to the **selected** input (threshold plus optional cleanup); background removal itself changes the original data. Optional decimation remains explicitly lossy.
 
 On the included skull, the default threshold leaves nonzero data extending to block boundaries, so the eight blocks are each 128³ and total **16 MiB**, equal to the original. A single block is **2 MiB**. This corrects the previous K-means implementation's 60.96 MiB of overlapping bounding boxes. It does not claim a new full-volume compression gain where none exists.
+
+## Foreground selection experiment
+
+To remove unwanted regions before tight cropping, run `python foreground_study.py`, then open [the foreground viewer](http://127.0.0.1:8765/webgl_volume_rendering.html?study=foreground) with the local server running. The viewer supports all blocks and individual blocks for each preset. Use a fresh `--output` directory to repeat; pass its path as `&base=./experiments/run2/` in the viewer URL.
+
+On this skull, threshold 30 plus removal of six-connected regions smaller than 512 voxels yields **14.43 MiB**; threshold 60 with the same region filter yields **11.58 MiB**, without downsampling. These are heuristic selections, not proof that every discarded voxel is noise. See [selection results and losses](experiments/foreground-results/RESULTS.md). The default extractor remains an unfiltered control so comparisons stay explicit.
 
 ## Run
 
@@ -73,6 +79,7 @@ Open `webgl_volume_rendering.html?manifest=./experiments/custom/metadata.json`. 
 - Input is uint8 RAW, X varying fastest. CLI dimensions are **X Y Z**; NumPy arrays are **Z Y X**. File length must match exactly.
 - Omit `--threshold` for the seeded two-population intensity heuristic. This is not anatomical segmentation.
 - `--strategy spatial` is the default. `--strategy kmeans` retains the previous method for controlled comparison; it has no disjoint-box/storage guarantee. Spatial weights only affect K-means.
+- `--cleanup connected --min-region-voxels 512` removes small six-connected foreground regions after thresholding. Retained regions keep their thin branches. `opening` additionally applies a 3³ morphological opening; `legacy` audits the old border removal and erosion. Both can destroy thin structures. `none` is the default.
 - `--downsample 2` keeps every second voxel on every axis, without anti-aliasing. It can remove thin structures and is not lossless compression.
 - `--mode crop` generates a single foreground bounding box; `--mode original` skips thresholding.
 
