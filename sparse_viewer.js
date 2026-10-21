@@ -167,11 +167,37 @@ function announce() {
   payload_bytes:payload+pageBytes, bricks:activeBricks, groups:meta.groups.map(g=>({id:g.id,name:g.name})),
   dimensions:meta.dimensions_xyz, selected_voxels:meta.selected_voxels},location.origin);
 }
+// Continuous embedded drawing: rAF cadence and asynchronous GPU elapsed queries.
+// Never convert GPU time into displayed FPS or block with gl.finish().
+let liveRAF=0, liveEnabled=false, lastTick=0, elapsed=0, ticks=0, gpuTimes=[], queries=[];
+function clearQueries(){for(const q of queries)gl.deleteQuery(q);queries=[];gpuTimes=[];}
+function liveTick(now){
+ liveRAF=0;if(!liveEnabled)return;
+ if(document.hidden||!texture||busy){lastTick=0;elapsed=0;ticks=0;clearQueries();liveRAF=requestAnimationFrame(liveTick);return;}
+ if(ext){
+  if(gl.getParameter(ext.GPU_DISJOINT_EXT))clearQueries();
+  else while(queries.length&&gl.getQueryParameter(queries[0],gl.QUERY_RESULT_AVAILABLE)){
+   const q=queries.shift();gpuTimes.push(gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6);gl.deleteQuery(q);
+  }
+ }
+ const q=ext&&queries.length<8?gl.createQuery():null;
+ if(q)gl.beginQuery(ext.TIME_ELAPSED_EXT,q);
+ draw();
+ if(q){gl.endQuery(ext.TIME_ELAPSED_EXT);queries.push(q);}
+ if(lastTick){elapsed+=now-lastTick;ticks++;}lastTick=now;
+ if(elapsed>=1000){parent.postMessage({type:'volume-performance',fps:ticks*1000/elapsed,gpu_ms:median(gpuTimes),width:canvas.width,height:canvas.height},location.origin);elapsed=0;ticks=0;gpuTimes=[];}
+ liveRAF=requestAnimationFrame(liveTick);
+}
+function setLive(enabled){
+ if(enabled===liveEnabled)return;liveEnabled=enabled;cancelAnimationFrame(liveRAF);lastTick=0;elapsed=0;ticks=0;clearQueries();
+ if(enabled)liveRAF=requestAnimationFrame(liveTick);
+}
 window.addEventListener('message',event=>{
  if(!embedded||event.origin!==location.origin||event.source!==parent||!meta)return;
  const m=event.data;
  if(m?.type==='volume-camera'&&Array.isArray(m.rotation)&&m.rotation.length===9&&m.rotation.every(Number.isFinite)){
   sharedRotation=m.rotation;
+  setLive(m.live===true);
   for(const [id,value,lo,hi] of [['zoom',m.zoom,.8,4],['step',m.step,.5,4],['cutoff',m.cutoff,0,254]])
    if(Number.isFinite(value))$(id).value=Math.max(lo,Math.min(hi,value));
   draw();
