@@ -33,6 +33,20 @@ Open `http://127.0.0.1:8765/sparse_volume.html`. The viewer reads only the selec
 
 For repeat runs, choose empty output folders. Change the viewer manifest using `?manifest=./experiments/supervolume/my-selection/metadata.json`. Extraction is offline/in-memory, not out of core.
 
+## Side-by-side original / selected comparison
+
+Export the 8³ variant (once, into an empty folder):
+
+```bash
+python supervolume.py export --input skull_256x256x256_uint8.raw \
+  --analysis experiments/supervolume/analysis --config configs/skull-candidates.json \
+  --output experiments/supervolume/selected8 --brick-size 8
+```
+
+Open `http://127.0.0.1:8765/compare_volumes.html`. The left panel loads the complete original RAW and verifies its hash against the export metadata; the right loads only the selected export. Drag either panel to rotate both with an arcball; scroll to zoom both. The right group selector changes only the selected content. Cutoff and sampling step are shared. Memory labels show allocated volume texture payload, not total browser or GPU memory; both panels are resident simultaneously. This is a visual comparison, not a timing benchmark.
+
+Use `?manifest=./experiments/supervolume/selected/metadata.json` to compare the existing 16³ export, or specify another manifest and `&input=./path/to/original.raw`. The selected data is intentionally lossy; matching camera settings do not establish anatomical preservation.
+
 ## Choose a target
 
 Open `http://127.0.0.1:8765/region_inspector.html`. Move the Z slice, click one or more regions, adjust the fixed intensity interval, minimum support and boundary contrast, and inspect the cyan preview. Yellow indicates seed regions. Download the config and pass it to `supervolume.py export`. The preview is a slice of a 3D graph selection, not a 2D flood fill.

@@ -12,7 +12,7 @@ The current experiment asks:
 
 The new path implements **3D SLIC candidate regions → constrained graph selection → cropped sparse bricks → logical groups**. It preserves the selected voxels exactly; the target-selection rule remains explicitly lossy. Parent AABBs store references, never dense volumes. The viewer uses a shared texture atlas and page table rather than one sampler per component.
 
-See [algorithm choices, selection rules and commands](docs/SUPERVOLUMES.md) and [measured results](experiments/supervolume-results/RESULTS.md). Run the two `supervolume.py` commands in that guide, then open [logical volumes](http://127.0.0.1:8765/sparse_volume.html) or [the slice seed selector](http://127.0.0.1:8765/region_inspector.html). Existing spatial experiments below remain comparison baselines.
+See [algorithm choices, selection rules and commands](docs/SUPERVOLUMES.md) and [measured results](experiments/supervolume-results/RESULTS.md). Run the two `supervolume.py` commands in that guide, then open [logical volumes](http://127.0.0.1:8765/sparse_volume.html) or [the slice seed selector](http://127.0.0.1:8765/region_inspector.html). The [side-by-side comparison](http://127.0.0.1:8765/compare_volumes.html) shows the full original beside selected 8³ bricks, with synchronized arcball rotation and zoom; see the guide for its export command. Existing spatial experiments below remain comparison baselines.
 
 ## Current design
 

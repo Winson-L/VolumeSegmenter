@@ -1,6 +1,10 @@
 const $=id=>document.getElementById(id), canvas=$('canvas');
 const gl=canvas.getContext('webgl2',{antialias:false,preserveDrawingBuffer:true});
 if(!gl)throw Error('WebGL2 required');
+const params = new URLSearchParams(location.search);
+const embedded = params.get('embed') === '1', originalMode = params.get('original') === '1';
+if (embedded) { document.querySelector('aside').hidden = true; document.body.style.overflow = 'hidden'; }
+let sharedRotation = null;
 const ext=gl.getExtension('EXT_disjoint_timer_query_webgl2');
 const vs=`#version 300 es
 layout(location=0) in vec2 position;void main(){gl_Position=vec4(position,0,1);}`;
@@ -8,8 +12,9 @@ const fs=`#version 300 es
 precision highp float;precision highp int;precision highp sampler3D;precision highp usampler3D;
 out vec4 color;uniform sampler3D atlas;uniform usampler3D pages;
 uniform ivec3 slots;uniform vec3 fullDims,clipMin,clipMax;
+uniform mat3 sharedRotation;uniform bool useSharedRotation;
 uniform vec2 resolution,angles;uniform float distanceScale,stepSize,cutoff;uniform int brickSize,sparseMode;
-vec3 rotate(vec3 p){float cx=cos(angles.x),sx=sin(angles.x),cy=cos(angles.y),sy=sin(angles.y);p=vec3(p.x,cx*p.y-sx*p.z,sx*p.y+cx*p.z);return vec3(cy*p.x+sy*p.z,p.y,-sy*p.x+cy*p.z);}
+vec3 rotate(vec3 p){if(useSharedRotation)return sharedRotation*p;float cx=cos(angles.x),sx=sin(angles.x),cy=cos(angles.y),sy=sin(angles.y);p=vec3(p.x,cx*p.y-sx*p.z,sx*p.y+cx*p.z);return vec3(cy*p.x+sy*p.z,p.y,-sy*p.x+cy*p.z);}
 void main(){
  vec2 uv=gl_FragCoord.xy/resolution*2.-1.;uv.x*=resolution.x/resolution.y;
  float scale=max(fullDims.x,max(fullDims.y,fullDims.z));
@@ -101,6 +106,8 @@ function draw(){
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
  gl.viewport(0,0,w,h);gl.useProgram(program);gl.bindVertexArray(vao);
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_3D,texture);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_3D,pageTexture);
+ gl.uniform1i(loc('useSharedRotation'),sharedRotation ? 1 : 0);
+ if(sharedRotation)gl.uniformMatrix3fv(loc('sharedRotation'),false,sharedRotation);
  gl.uniform1i(loc('atlas'),0);gl.uniform1i(loc('pages'),1);gl.uniform3iv(loc('slots'),slots);gl.uniform3fv(loc('fullDims'),dims);
  gl.uniform3fv(loc('clipMin'),bounds.lo);gl.uniform3fv(loc('clipMax'),bounds.hi);gl.uniform2f(loc('resolution'),w,h);
  gl.uniform2f(loc('angles'),+$('rx').value*Math.PI/180,+$('ry').value*Math.PI/180);
@@ -114,7 +121,7 @@ function controls(){
  l.append(c,document.createTextNode(` ${g.name} · ${g.selected_voxels.toLocaleString()} voxels`),solo);$('groups').append(l);}
 }
 async function action(fn){if(busy)return;busy=true;for(const e of document.querySelectorAll('input,button'))e.disabled=true;
- try{await fn();}catch(e){$('status').textContent=e.message;console.error(e);}finally{busy=false;for(const e of document.querySelectorAll('input,button'))e.disabled=false;$('download').disabled=!report;controls();}}
+ try{await fn();}catch(e){$('status').textContent=e.message;console.error(e);if(embedded)parent.postMessage({type:'volume-error',message:e.message},location.origin);}finally{busy=false;for(const e of document.querySelectorAll('input,button'))e.disabled=false;$('download').disabled=!report;controls();}}
 function pixels(){const p=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,p);return p;}
 async function measure(){for(let i=0;i<5;i++){await frame();draw();}const gpu=[],wall=[];
  for(let i=0;i<20;i++){await frame();const t=performance.now(),q=ext?gl.createQuery():null;
@@ -155,9 +162,37 @@ $('all').onclick=()=>action(async()=>{pack(meta.groups.map(g=>g.id));controls();
 $('download').onclick=()=>{if(!report)return;const u=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='supervolume-rendering.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};
 for(const id of ['rx','ry','zoom','step','cutoff'])$(id).oninput=()=>{try{draw();}catch(e){$('status').textContent=e.message;}};
 window.addEventListener('resize',()=>{if(!busy)draw();});
+function announce() {
+ if (embedded) parent.postMessage({type:'volume-ready', original:originalMode,
+  payload_bytes:payload+pageBytes, bricks:activeBricks, groups:meta.groups.map(g=>({id:g.id,name:g.name})),
+  dimensions:meta.dimensions_xyz, selected_voxels:meta.selected_voxels},location.origin);
+}
+window.addEventListener('message',event=>{
+ if(!embedded||event.origin!==location.origin||event.source!==parent||!meta)return;
+ const m=event.data;
+ if(m?.type==='volume-camera'&&Array.isArray(m.rotation)&&m.rotation.length===9&&m.rotation.every(Number.isFinite)){
+  sharedRotation=m.rotation;
+  for(const [id,value,lo,hi] of [['zoom',m.zoom,.8,4],['step',m.step,.5,4],['cutoff',m.cutoff,0,254]])
+   if(Number.isFinite(value))$(id).value=Math.max(lo,Math.min(hi,value));
+  draw();
+ } else if(m?.type==='volume-selection'&&!originalMode&&Array.isArray(m.ids)){
+  action(async()=>{pack(m.ids.filter(id=>meta.groups.some(g=>g.id===id)));controls();announce();});
+ }
+});
 await action(async()=>{
  meta=await(await fetchData(url.href)).json();
  if(meta.schema_version!==3||meta.format!=='cropped-grid-bricks')throw Error('Unsupported sparse manifest');
+ if(originalMode){
+  const rawURL=new URL(params.get('input')||'./skull_256x256x256_uint8.raw',location.href);
+  const raw=new Uint8Array(await(await fetchData(rawURL.href)).arrayBuffer());
+  if(raw.length!==meta.dimensions_xyz.reduce((a,b)=>a*b,1))throw Error('Original dimensions do not match');
+  const sha=[...new Uint8Array(await crypto.subtle.digest('SHA-256',raw))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(sha!==meta.input_sha256)throw Error('Original and selected dataset hashes differ');
+  gl.activeTexture(gl.TEXTURE0);texture=texture3D(raw,meta.dimensions_xyz);
+  gl.activeTexture(gl.TEXTURE1);pageTexture=texture3D(new Uint32Array(1),[1,1,1],true);
+  mode=0;payload=raw.byteLength;pageBytes=4;bounds={lo:[0,0,0],hi:meta.dimensions_xyz};
+  draw();announce();return;
+ }
  density=new Uint8Array(await(await fetchData(meta.density_file)).arrayBuffer());owners=new Uint8Array(await(await fetchData(meta.owners_file)).arrayBuffer());
  if(density.length!==meta.density_bytes||owners.length!==density.length)throw Error('Payload length mismatch');
  const cells=new Set(),dims=meta.dimensions_xyz,b=meta.brick_size;
@@ -167,5 +202,5 @@ await action(async()=>{
   if(r.dimensions_xyz.reduce((a,b)=>a*b,1)!==r.bytes||r.offset+r.bytes>density.length||r.origin_xyz.some((v,k)=>v<r.cell_xyz[k]*b||v+r.dimensions_xyz[k]>Math.min(dims[k],(r.cell_xyz[k]+1)*b)))throw Error('Invalid bounds or offsets');
  }
  $('selection').textContent=`${meta.selected_voxels.toLocaleString()} selected voxels. Groups are intensity candidates, not anatomical labels. Changing display cutoff cannot restore discarded data.`;
- pack(meta.groups.map(g=>g.id));$('status').textContent='Ready. Compare verifies matching images and measures each logical group.';
+ pack(meta.groups.map(g=>g.id));announce();$('status').textContent='Ready. Compare verifies matching images and measures each logical group.';
 });
