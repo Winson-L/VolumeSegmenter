@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>VolumeSegmenter · Choose regions</title>
+<style>body{margin:24px;background:#111820;color:#e2eaf3;font:14px system-ui;display:grid;grid-template-columns:320px 1fr;gap:28px}aside{background:#182330;padding:20px;border-radius:12px}h1{font-size:21px}label{display:block;margin:12px 0}input,select,button{box-sizing:border-box;width:100%;padding:7px;background:#293b50;color:white;border:1px solid #60738a;border-radius:4px}input[type=checkbox]{width:auto}p{color:#b8c8da;line-height:1.5}canvas{image-rendering:pixelated;max-width:100%;width:640px;cursor:crosshair;border:1px solid #60738a}pre{white-space:pre-wrap}a{color:#9cccf4}#detail{max-width:640px}</style>
+<aside><h1>Choose local regions</h1><p>Click a slice to seed a connected candidate. Cyan shows selected voxels; yellow marks seed regions. Boundaries show SLIC regions.</p>
+<label>Group name<input id="name" value="Selected candidate"></label>
+<label>Selection<select id="mode"><option value="seeded">Seeded connected growth</option><option value="all_candidates">All matching regions</option></select></label>
+<label>Lower intensity<input id="low" type="number" min="0" max="255" value="61"></label>
+<label>Upper intensity<input id="high" type="number" min="0" max="255" value="255"></label>
+<label>Minimum fraction in range<input id="fraction" type="number" min="0" max="1" step="0.01" value="0.10"></label>
+<label>Maximum boundary contrast<input id="boundary" type="number" min="0" max="255" value="40"></label>
+<label><input id="clip" type="checkbox" checked> Keep only in-range voxels within selected regions</label>
+<button id="clear">Clear seeds</button><button id="download" disabled>Download selection config</button><p id="status">Loading analysis…</p><a href="sparse_volume.html">View exported logical volumes</a></aside>
+<main><label>Slice Z <input id="slice" type="range" min="0" value="128"></label><canvas id="sliceCanvas"></canvas><pre id="detail"></pre><p>After choosing regions, export with the downloaded config:</p><pre id="command"></pre><p>The inspector reads the original input and SLIC cache for selection. The exported viewer needs only the selected bricks, not the original or this cache.</p></main>
+<script type="module" src="region_inspector.js?v=1"></script></html>

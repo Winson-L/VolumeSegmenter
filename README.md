@@ -8,6 +8,12 @@ The current experiment asks:
 2. How do all-block and single-block rendering differ in GPU time and resident texture payload?
 3. Does hiding a block save memory, or must its texture be released?
 
+## New: content-driven logical volumes
+
+The new path implements **3D SLIC candidate regions → constrained graph selection → cropped sparse bricks → logical groups**. It preserves the selected voxels exactly; the target-selection rule remains explicitly lossy. Parent AABBs store references, never dense volumes. The viewer uses a shared texture atlas and page table rather than one sampler per component.
+
+See [algorithm choices, selection rules and commands](docs/SUPERVOLUMES.md) and [measured results](experiments/supervolume-results/RESULTS.md). Run the two `supervolume.py` commands in that guide, then open [logical volumes](http://127.0.0.1:8765/sparse_volume.html) or [the slice seed selector](http://127.0.0.1:8765/region_inspector.html). Existing spatial experiments below remain comparison baselines.
+
 ## Current design
 
 The default extractor recursively divides space along axis-aligned planes, discards empty space and tightly crops each resulting block. Blocks have **disjoint bounding boxes**: each stores only its own local W×H×D array, with `origin_xyz` locating it in the original volume. The renderer uploads these local textures directly; it does not expand them to the original dimensions.

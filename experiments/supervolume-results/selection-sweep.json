@@ -1,0 +1,37 @@
+[
+  {
+    "min_fraction": 0,
+    "selected_regions": 767,
+    "selected_voxels": 503197,
+    "removed_above60": 0,
+    "removed_above120": 0
+  },
+  {
+    "min_fraction": 0.01,
+    "selected_regions": 457,
+    "selected_voxels": 500147,
+    "removed_above60": 3050,
+    "removed_above120": 96
+  },
+  {
+    "min_fraction": 0.05,
+    "selected_regions": 347,
+    "selected_voxels": 492685,
+    "removed_above60": 10512,
+    "removed_above120": 256
+  },
+  {
+    "min_fraction": 0.1,
+    "selected_regions": 299,
+    "selected_voxels": 482942,
+    "removed_above60": 20255,
+    "removed_above120": 378
+  },
+  {
+    "min_fraction": 0.2,
+    "selected_regions": 242,
+    "selected_voxels": 460878,
+    "removed_above60": 42319,
+    "removed_above120": 468
+  }
+]
