@@ -1,4 +1,9 @@
 const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search),dataset=params.get('dataset')||'skull',large=['kingsnake','woodbranch'].includes(dataset),staticReference=large&&(dataset==='woodbranch'||params.get('reference')==='image');
+$('dataset').value=dataset;
+$('dataset').onchange=()=>{location.href='compare_volumes.html?dataset='+$('dataset').value;};
+$('reference').onchange=()=>{location.href='compare_volumes.html?dataset='+dataset+'&reference='+$('reference').value;};
+
 const frames=[$('leftFrame'),$('rightFrame')],ready=[false,false];
 // Unit quaternions rotate the shared camera from view space to volume space.
 const multiply=(a,b)=>[
@@ -11,7 +16,7 @@ const axisAngle=(axis,a)=>[...axis.map(v=>v*Math.sin(a/2)),Math.cos(a/2)];
 const initial=()=>axisAngle([1,0,0],Math.PI/2);
 let rotation=initial(),zoom=1.8,queued=false,drag=null;
 function matrix([x,y,z,w]){return [1-2*(y*y+z*z),2*(x*y+z*w),2*(x*z-y*w),2*(x*y-z*w),1-2*(x*x+z*z),2*(y*z+x*w),2*(x*z+y*w),2*(y*z-x*w),1-2*(x*x+y*y)];}
-function sync(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;const message={type:'volume-camera',rotation:matrix(rotation),zoom,live:$('live').checked,step:+$('step').value,cutoff:+$('cutoff').value};frames.forEach((f,i)=>{if(ready[i])f.contentWindow.postMessage(message,location.origin);});});}
+function sync(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;const message={type:'volume-camera',rotation:matrix(rotation),zoom,live:$('live').checked,step:+$('step').value,cutoff:+$('cutoff').value,window:large?+$('window').value:undefined};frames.forEach((f,i)=>{if(ready[i])f.contentWindow.postMessage(message,location.origin);});});}
 function point(event,element){const r=element.getBoundingClientRect(),scale=Math.min(r.width,r.height);let x=(2*(event.clientX-r.left)-r.width)/scale,y=(r.height-2*(event.clientY-r.top))/scale;const d=x*x+y*y;
  if(d<=1)return [x,y,Math.sqrt(1-d)];const s=1/Math.sqrt(d);return [x*s,y*s,0];}
 function between(a,b){const dot=Math.max(-1,Math.min(1,a.reduce((s,v,i)=>s+v*b[i],0)));let cross=[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
@@ -23,8 +28,8 @@ for(const element of [$('leftDrag'),$('rightDrag')]){
  element.addEventListener('wheel',e=>{e.preventDefault();const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?element.clientHeight:1);zoom=Math.max(.8,Math.min(4,zoom*Math.exp(delta*.001)));sync();},{passive:false});
  element.onkeydown=e=>{const direction={ArrowLeft:[0,-.08],ArrowRight:[0,.08],ArrowUp:[1,-.08],ArrowDown:[1,.08]}[e.key];if(direction){e.preventDefault();rotation=normalized(multiply(rotation,axisAngle(direction[0]?[1,0,0]:[0,1,0],direction[1])));sync();}else if(e.key==='+'||e.key==='-'){e.preventDefault();zoom=Math.max(.8,Math.min(4,zoom*(e.key==='+'?.9:1.1)));sync();}};
 }
-for(const id of ['step','cutoff'])$(id).oninput=()=>{$(id+'Value').textContent=$(id).value;sync();};
-$('live').onchange=()=>{for(const side of ['left','right'])$(side+'FPS').textContent=$('live').checked?'FPS 测量中…':'FPS 已暂停';sync();};
+for(const id of ['step','cutoff','window'])$(id).oninput=()=>{$(id+'Value').textContent=$(id).value;sync();};
+$('live').onchange=()=>{for(const side of ['left','right']){if(side==='left'&&staticReference)continue;$(side+'FPS').textContent=$('live').checked?'FPS 测量中…':'FPS 已暂停';}sync();};
 $('reset').onclick=()=>{rotation=initial();zoom=1.8;sync();};
 $('front').onclick=()=>{rotation=initial();sync();};
 $('side').onclick=()=>{rotation=multiply(axisAngle([0,1,0],Math.PI/2),initial());sync();};
@@ -38,9 +43,37 @@ window.addEventListener('message',e=>{
  if(index===0)$('leftCaption').textContent=`${m.dimensions.join(' × ')} 原始体素 · 显示阈值仅控制可见性`;
  else{
   $('rightCaption').textContent=`${m.bricks.toLocaleString()} 个活动小块 · 筛选后共 ${m.selected_voxels.toLocaleString()} 个体素`;
-  if(!groupIDs.length){groupIDs=m.groups.map(g=>g.id);for(const g of m.groups){const option=document.createElement('option');option.value=g.id;option.textContent=g.name;$('groups').append(option);}$('groups').disabled=false;}
+  if(!large&&!groupIDs.length){groupIDs=m.groups.map(g=>g.id);for(const g of m.groups){const option=document.createElement('option');option.value=g.id;option.textContent=g.name;$('groups').append(option);}$('groups').disabled=false;}
  }
- if(ready.every(Boolean))$('status').textContent='已同步 · 相同视角、缩放、显示阈值和采样步长';sync();
+ if(ready.every(Boolean))$('status').textContent=staticReference?'右侧可旋转 · 左侧为静态外观参考，视角、阈值与传递函数不同':'已同步 · 相同视角、缩放、显示阈值和采样步长';sync();
 });
-const params=new URLSearchParams(location.search),manifest=params.get('manifest')||'./experiments/supervolume/selected8/metadata.json';
-for(let i=0;i<2;i++){const url=new URL('sparse_volume.html',location.href);url.searchParams.set('embed','1');url.searchParams.set('v','fps-1');url.searchParams.set('manifest',manifest);if(!i){url.searchParams.set('original','1');if(params.has('input'))url.searchParams.set('input',params.get('input'));}frames[i].src=url.href;}
+
+const manifest=large?'./experiments/large-volumes/'+(dataset==='kingsnake'?'kingsnake40':'woodbranch7000')+'/metadata.json':params.get('manifest')||'./experiments/supervolume/selected8/metadata.json';
+if(large){
+ $('groups').closest('label').hidden=true;$('referenceControl').hidden=false;$('windowControl').hidden=false;
+ const cutoff=dataset==='kingsnake'?40:7000,max=dataset==='kingsnake'?255:57147;
+ $('cutoff').max=max-1;$('cutoff').value=cutoff;$('cutoffValue').textContent=cutoff;
+ $('window').max=max;$('window').value=max;$('windowValue').textContent=max;
+ document.querySelector('h1').textContent=dataset+' · reference / pipeline';
+ document.querySelector('.help').textContent='右侧保持全分辨率与原始位深；Kingsnake 提取阈值 >40，Woodbranch >7000。降低显示阈值不会恢复右侧已删除的体素。FPS 受刷新率及共享 GPU 影响；纹理用量不是总显存。';
+ document.querySelectorAll('.panel-head h2')[0].textContent=staticReference?'网上渲染 reference':'完整原始 reference';
+ document.querySelectorAll('.panel-head p')[0].textContent=staticReference?'Kiln Gallery · '+(dataset==='kingsnake'?'MIP':'DVR')+' · 静态截图':'原始分辨率 · 未做提取过滤';
+ $('reference').value=staticReference?'image':'original';
+ if(dataset==='woodbranch')$('reference').querySelector('[value="original"]').disabled=true;
+ if(staticReference){
+  ready[0]=true;frames[0].hidden=true;$('leftDrag').hidden=true;
+  $('referenceImage').hidden=false;$('referenceImage').src='https://kilnrender.com/gallery/'+dataset+'.webp';
+  $('referenceImage').onerror=()=>{$('leftCaption').textContent='参考图加载失败；请打开下方来源链接查看。';};
+  $('leftMemory').textContent='静态图片';$('leftFPS').textContent='FPS 不适用';
+  $('leftCaption').replaceChildren(document.createTextNode('外观参考，非逐像素验证 · '));
+  const link=document.createElement('a');link.href='https://kilnrender.com/gallery';link.textContent='来源：Kiln Gallery';link.target='_blank';link.rel='noopener';$('leftCaption').append(link);
+  document.querySelector('.badge').textContent='右侧 Arcball';
+  document.querySelector('header p').textContent='右侧拖动旋转、滚轮缩放 · 左侧为网上参考截图';
+ }
+}
+for(let i=0;i<2;i++){
+ if(i===0&&staticReference)continue;
+ const url=new URL(large?'large_volume.html':'sparse_volume.html',location.href);url.searchParams.set('embed','1');url.searchParams.set('v','compare-3');url.searchParams.set('manifest',manifest);
+ if(!i){url.searchParams.set('original','1');if(params.has('input'))url.searchParams.set('input',params.get('input'));}
+ frames[i].src=url.href;
+}

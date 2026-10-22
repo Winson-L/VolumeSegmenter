@@ -1,14 +1,16 @@
 const $=id=>document.getElementById(id),canvas=$('canvas'),gl=canvas.getContext('webgl2',{antialias:false,preserveDrawingBuffer:true});
 if(!gl)throw Error('需要 WebGL2');
 const params=new URLSearchParams(location.search),url=new URL(params.get('manifest')||'./experiments/large-volumes/kingsnake40/metadata.json',location.href);
+const embedded=params.has('embed');
+if(embedded){document.body.classList.add('embedded');}
 const ext=gl.getExtension('EXT_disjoint_timer_query_webgl2'),MiB=n=>(n/1048576).toFixed(2)+' MiB';
 const fragment=`#version 300 es
 precision highp float;precision highp int;precision highp usampler2DArray;precision highp usampler3D;
 uniform usampler2DArray packedData;uniform usampler3D pageTable,originalData;
-uniform ivec3 dims,brick;uniform int packedWidth,packedHeight,mode;uniform vec2 resolution,angles;
+uniform ivec3 dims,brick;uniform mat3 cameraRotation;uniform bool sharedCamera;uniform int packedWidth,packedHeight,mode;uniform vec2 resolution,angles;
 uniform vec3 spacing;uniform float zoom,stepSize,cutoff,windowMax;
 out vec4 color;
-vec3 rotate(vec3 p){float a=angles.x,b=angles.y; p=vec3(p.x,cos(a)*p.y-sin(a)*p.z,sin(a)*p.y+cos(a)*p.z);return vec3(cos(b)*p.x+sin(b)*p.z,p.y,-sin(b)*p.x+cos(b)*p.z);}
+vec3 rotate(vec3 p){if(sharedCamera)return cameraRotation*p;float a=angles.x,b=angles.y; p=vec3(p.x,cos(a)*p.y-sin(a)*p.z,sin(a)*p.y+cos(a)*p.z);return vec3(cos(b)*p.x+sin(b)*p.z,p.y,-sin(b)*p.x+cos(b)*p.z);}
 void main(){
  vec2 uv=gl_FragCoord.xy/resolution*2.-1.;uv.x*=resolution.x/resolution.y;
  vec3 size=vec3(dims)*spacing;float scale=max(size.x,max(size.y,size.z));
@@ -47,6 +49,8 @@ function compile(type,s){const shader=gl.createShader(type);gl.shaderSource(shad
 const program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,'#version 300 es\nlayout(location=0) in vec2 p;void main(){gl_Position=vec4(p,0,1);}'));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
 gl.useProgram(program);const vao=gl.createVertexArray();gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
 const loc=n=>gl.getUniformLocation(program,n),frame=()=>new Promise(r=>requestAnimationFrame(r)),median=a=>{if(!a.length)return null;const s=[...a].sort((a,b)=>a-b);return(s[Math.floor((s.length-1)/2)]+s[Math.floor(s.length/2)])/2;};
+let camera=null,live=false,livePending=false,liveQuery=null,liveStart=performance.now(),liveFrames=0,liveSamples=[];
+let displayCutoff=0;
 let meta,packed,pages,original,packedWidth=1,packedHeight=1,payload=0,current='compact',busy=false,rx=Math.PI/2,ry=0,zoom=1.8,report=null;
 const budget=1024*1048576;
 $('fps').textContent='按需渲染；点击独立对比测 GPU 每帧耗时';
@@ -55,10 +59,11 @@ async function checked(path,sha){const a=await data(path);const actual=[...new U
 function texture(target,size,values,internal,format,type,unit){gl.activeTexture(gl.TEXTURE0+unit);const t=gl.createTexture();gl.bindTexture(target,t);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);if(target===gl.TEXTURE_2D)gl.texImage2D(target,0,internal,...size,0,format,type,values);else gl.texImage3D(target,0,internal,...size,0,format,type,values);for(const p of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(target,p,gl.NEAREST);for(const p of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(target,p,gl.CLAMP_TO_EDGE);if(target===gl.TEXTURE_3D)gl.texParameteri(target,gl.TEXTURE_WRAP_R,gl.CLAMP_TO_EDGE);if(gl.getError()!==gl.NO_ERROR){gl.deleteTexture(t);throw Error('GPU 纹理分配失败');}return t;}
 function release(){for(const t of [packed,pages,original])if(t)gl.deleteTexture(t);packed=pages=original=null;}
 async function load(mode){
+ const source=meta;
  if(mode==='original'){
-  if(meta.dimensions_xyz.some(n=>n>gl.getParameter(gl.MAX_3D_TEXTURE_SIZE)))throw Error('完整数据超过 MAX_3D_TEXTURE_SIZE');
-  if(meta.source_bytes>budget)throw Error(`完整体素 ${MiB(meta.source_bytes)} 超过本实验 1024 MiB 单体预算（未执行分配，不等于实测 OOM）`);
-  if(!meta.original_file)throw Error('未保存完整 RAW；可按块生成参考投影');
+  if(source.dimensions_xyz.some(n=>n>gl.getParameter(gl.MAX_3D_TEXTURE_SIZE)))throw Error('完整数据超过 MAX_3D_TEXTURE_SIZE');
+  if(source.source_bytes>budget)throw Error(`完整体素 ${MiB(source.source_bytes)} 超过本实验 1024 MiB 单体预算（未执行分配，不等于实测 OOM）`);
+  if(!source.original_file)throw Error('未保存完整 RAW；可按块生成参考投影');
  }
  release();current=mode;$('status').textContent='加载 '+mode+'…';
  const type=meta.bytes_per_voxel===2?gl.UNSIGNED_SHORT:gl.UNSIGNED_BYTE,internal=meta.bytes_per_voxel===2?gl.R16UI:gl.R8UI,ArrayType=meta.bytes_per_voxel===2?Uint16Array:Uint8Array;
@@ -73,8 +78,8 @@ async function load(mode){
   original=texture(gl.TEXTURE_3D,[1,1,1],new Uint8Array(1),gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,2);
   payload=padded.byteLength+table.byteLength+1;
  }else{
-  const a=new ArrayType(await data(meta.original_file));if(a.byteLength!==meta.source_bytes)throw Error('原始大小不匹配');
-  original=texture(gl.TEXTURE_3D,meta.dimensions_xyz,a,internal,gl.RED_INTEGER,type,2);
+  const a=new ArrayType(await data(source.original_file));if(a.byteLength!==source.source_bytes)throw Error('原始大小不匹配');
+  original=texture(gl.TEXTURE_3D,source.dimensions_xyz,a,internal,gl.RED_INTEGER,type,2);
   packed=texture(gl.TEXTURE_2D_ARRAY,[1,1,1],new Uint8Array(1),gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,0);
   pages=texture(gl.TEXTURE_3D,[1,1,1],new Uint32Array(4),gl.RGBA32UI,gl.RGBA_INTEGER,gl.UNSIGNED_INT,1);payload=a.byteLength+17;
  }
@@ -85,7 +90,7 @@ function draw(fixed){
  const [w,h]=fixed||[Math.round(canvas.clientWidth*Math.min(devicePixelRatio,2)),Math.round(canvas.clientHeight*Math.min(devicePixelRatio,2))];if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.useProgram(program);gl.bindVertexArray(vao);
  for(const [i,t,target] of [[0,packed,gl.TEXTURE_2D_ARRAY],[1,pages,gl.TEXTURE_3D],[2,original,gl.TEXTURE_3D]]){gl.activeTexture(gl.TEXTURE0+i);gl.bindTexture(target,t);}
  gl.uniform1i(loc('packedData'),0);gl.uniform1i(loc('pageTable'),1);gl.uniform1i(loc('originalData'),2);gl.uniform1i(loc('packedWidth'),packedWidth);gl.uniform1i(loc('packedHeight'),packedHeight);gl.uniform1i(loc('mode'),current==='original'?0:1);
- gl.uniform3iv(loc('dims'),meta.dimensions_xyz);gl.uniform3iv(loc('brick'),meta.brick_xyz);const minimum=Math.min(...meta.spacing_xyz);gl.uniform3fv(loc('spacing'),meta.spacing_xyz.map(s=>s/minimum));gl.uniform2f(loc('resolution'),w,h);gl.uniform2f(loc('angles'),rx,ry);gl.uniform1f(loc('zoom'),zoom);gl.uniform1f(loc('stepSize'),+$('step').value);gl.uniform1f(loc('cutoff'),meta.cutoff);gl.uniform1f(loc('windowMax'),+$('window').value);gl.drawArrays(gl.TRIANGLES,0,3);
+ gl.uniform1i(loc('sharedCamera'),!!camera);if(camera)gl.uniformMatrix3fv(loc('cameraRotation'),false,camera);gl.uniform3iv(loc('dims'),meta.dimensions_xyz);gl.uniform3iv(loc('brick'),meta.brick_xyz);const minimum=Math.min(...meta.spacing_xyz);gl.uniform3fv(loc('spacing'),meta.spacing_xyz.map(s=>s/minimum));gl.uniform2f(loc('resolution'),w,h);gl.uniform2f(loc('angles'),rx,ry);gl.uniform1f(loc('zoom'),zoom);gl.uniform1f(loc('stepSize'),+$('step').value);gl.uniform1f(loc('cutoff'),displayCutoff);gl.uniform1f(loc('windowMax'),+$('window').value);gl.drawArrays(gl.TRIANGLES,0,3);
 }
 function pixels(){const a=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,a);return a;}
 async function timed(){const samples=[];for(let i=0;i<5;i++){await frame();draw([640,480]);}for(let i=0;i<20;i++){await frame();if(!ext){draw([640,480]);continue;}const q=gl.createQuery();try{gl.beginQuery(ext.TIME_ELAPSED_EXT,q);draw([640,480]);gl.endQuery(ext.TIME_ELAPSED_EXT);gl.flush();const deadline=performance.now()+5000;while(!gl.getQueryParameter(q,gl.QUERY_RESULT_AVAILABLE)){if(performance.now()>deadline)throw Error('GPU 计时超时');await frame();}if(!gl.getParameter(ext.GPU_DISJOINT_EXT))samples.push(gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6);}finally{gl.deleteQuery(q);}}
@@ -108,9 +113,36 @@ async function benchmark(){
   $('summary').textContent=runs.map(r=>`${r.mode}: ${r.gpu_median_ms?.toFixed(2)??'N/A'} ms · ${MiB(r.texture_bytes)}`).join('\n')+(skip?'\n原始未运行：'+skip:`\n图像核对：${checks.filter(c=>c.different_channels===0).length}/${checks.length} 完全一致`);$('download').disabled=false;
  }finally{[rx,ry,zoom]=old;await load(old[3]);}
 }
-async function action(fn){if(busy)return;busy=true;for(const e of document.querySelectorAll('button,select,input'))e.disabled=true;try{await fn();}catch(e){$('status').textContent=e.message;console.error(e);$('mode').value=current;}finally{busy=false;for(const e of document.querySelectorAll('button,select,input'))e.disabled=false;$('download').disabled=!report;}}
+async function action(fn){if(busy)return;busy=true;for(const e of document.querySelectorAll('button,select,input'))e.disabled=true;try{await fn();}catch(e){$('status').textContent=e.message;console.error(e);if(embedded)parent.postMessage({type:'volume-error',message:e.message},location.origin);$('mode').value=current;}finally{busy=false;for(const e of document.querySelectorAll('button,select,input'))e.disabled=false;$('download').disabled=!report;}}
 $('mode').onchange=()=>action(()=>load($('mode').value));$('benchmark').onclick=()=>action(benchmark);$('step').oninput=()=>{$('stepValue').textContent=$('step').value;draw();};$('window').oninput=()=>draw();$('reset').onclick=()=>{rx=Math.PI/2;ry=0;zoom=1.8;draw();};
 $('download').onclick=()=>{const a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));a.href=u;a.download=meta.name+'-rendering.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};
 let drag=null;canvas.onpointerdown=e=>{if(busy)return;canvas.setPointerCapture(e.pointerId);drag=[e.clientX,e.clientY,rx,ry];};canvas.onpointermove=e=>{if(!drag||busy)return;rx=drag[2]+(e.clientY-drag[1])*.008;ry=drag[3]+(e.clientX-drag[0])*.008;draw();};canvas.onpointerup=canvas.onpointercancel=()=>drag=null;canvas.addEventListener('wheel',e=>{e.preventDefault();if(busy)return;zoom=Math.max(.8,Math.min(4,zoom*Math.exp(e.deltaY*.001)));draw();},{passive:false});
 window.addEventListener('resize',()=>{if(!busy)draw();});
-await action(async()=>{meta=JSON.parse(new TextDecoder().decode(await data(url.href)));if(meta.schema_version!==4)throw Error('Require compact schema 4');$('title').textContent=meta.name+' · 全分辨率紧密分块';$('source').textContent=`原始 ${meta.dimensions_xyz.join(' × ')} · ${meta.dtype} · ${MiB(meta.source_bytes)}；${meta.bricks.toLocaleString()} 个非空小块。`;$('method').textContent=`删除原始值 ≤ ${meta.cutoff}；保留 ${(100*meta.selected_voxels/(meta.source_bytes/meta.bytes_per_voxel)).toFixed(2)}% 体素。未改变位深或分辨率。`;$('window').max=meta.value_max;$('window').value=meta.value_max;await load('compact');});
+await action(async()=>{meta=JSON.parse(new TextDecoder().decode(await data(url.href)));displayCutoff=meta.cutoff;if(meta.schema_version!==4)throw Error('Require compact schema 4');$('title').textContent=meta.name+' · 全分辨率紧密分块';$('source').textContent=`原始 ${meta.dimensions_xyz.join(' × ')} · ${meta.dtype} · ${MiB(meta.source_bytes)}；${meta.bricks.toLocaleString()} 个非空小块。`;$('method').textContent=`删除原始值 ≤ ${meta.cutoff}；保留 ${(100*meta.selected_voxels/(meta.source_bytes/meta.bytes_per_voxel)).toFixed(2)}% 体素。未改变位深或分辨率。`;$('window').max=meta.value_max;$('window').value=meta.value_max;await load(params.has('original')?'original':'compact');
+ if(embedded)parent.postMessage({type:'volume-ready',payload_bytes:payload,dimensions:meta.dimensions_xyz,bricks:meta.bricks,selected_voxels:meta.selected_voxels,groups:[]},location.origin);
+});
+
+function liveTick(){
+ livePending=false;if(!live)return;
+ if(liveQuery&&gl.getQueryParameter(liveQuery,gl.QUERY_RESULT_AVAILABLE)){
+  if(!gl.getParameter(ext.GPU_DISJOINT_EXT))liveSamples.push(gl.getQueryParameter(liveQuery,gl.QUERY_RESULT)/1e6);
+  gl.deleteQuery(liveQuery);liveQuery=null;
+ }
+ if(!busy&&packed){
+  const query=ext&&!liveQuery?gl.createQuery():null;
+  if(query)gl.beginQuery(ext.TIME_ELAPSED_EXT,query);
+  draw();liveFrames++;
+  if(query){gl.endQuery(ext.TIME_ELAPSED_EXT);liveQuery=query;}
+ }
+ const now=performance.now();
+ if(now-liveStart>=1000){parent.postMessage({type:'volume-performance',fps:liveFrames*1000/(now-liveStart),gpu_ms:median(liveSamples),width:canvas.width,height:canvas.height},location.origin);liveStart=now;liveFrames=0;liveSamples=[];}
+ livePending=true;requestAnimationFrame(liveTick);
+}
+window.addEventListener('message',e=>{
+ if(!embedded||e.origin!==location.origin||e.source!==parent||e.data?.type!=='volume-camera')return;
+ const m=e.data;if(!Array.isArray(m.rotation)||m.rotation.length!==9||!m.rotation.every(Number.isFinite))return;
+ camera=m.rotation;zoom=m.zoom;displayCutoff=m.cutoff;$('step').value=m.step;
+ if(Number.isFinite(m.window))$('window').value=m.window;
+ live=!!m.live;draw();
+ if(live&&!livePending){liveStart=performance.now();liveFrames=0;liveSamples=[];livePending=true;requestAnimationFrame(liveTick);}
+});

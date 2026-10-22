@@ -53,3 +53,11 @@ The browser benchmark uses sequential original/compact modes, three fixed views,
 An original texture exceeding the 1 GiB experiment budget or device dimensions is **skipped before allocation**, with the reason recorded. That is not an observed OOM. A 16 GiB original is especially impractical on the tested M4/16 GiB unified-memory machine, but this experiment does not deliberately crash the browser to prove it.
 
 Cutoff 40 (Kingsnake) and 7000 (Woodbranch) are explicit exploratory targets, informed by small previews. They do not establish a universally correct foreground threshold. Woodbranch's high-intensity selection is especially restrictive: distinguish preservation under that display cutoff from preservation of the complete lower-intensity wood structure. A useful follow-up is a threshold/quality/budget sweep and comparison with content-based selection, not simply maximizing the reduction ratio.
+
+## Side-by-side reference viewer
+
+Open `compare_volumes.html?dataset=kingsnake` for full-resolution original versus pipeline, with shared arcball, window, display threshold and step, and per-panel live FPS/GPU time. The dataset selector also keeps the existing Skull comparison available.
+
+Open `compare_volumes.html?dataset=woodbranch` for the [Kiln Gallery](https://kilnrender.com/gallery) Woodbranch DVR image beside the live full-resolution pipeline. Kingsnake also offers the Gallery's MIP image via the reference selector. Images load directly from the credited source; an offline or failed image load shows a source-link fallback. These are **external appearance references**, with different camera and transfer settings, not pixel-equality controls. Only interactive panels rotate; static references have no FPS or GPU-memory measurement.
+
+The attempted Woodbranch source scale-2 reference was rejected because decoded chunk size disagreed with metadata. No invalid low-resolution source is displayed. Lowering the display threshold below the export cutoff cannot restore omitted pipeline voxels.
