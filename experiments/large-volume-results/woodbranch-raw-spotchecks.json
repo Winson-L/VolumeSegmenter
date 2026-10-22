@@ -1,0 +1,36 @@
+{
+  "source_url": "http://klacansky.com/open-scivis-datasets/woodbranch/woodbranch_2048x2048x2048_uint16.raw",
+  "method": "Three HTTP Range voxel reads; spot checks only, not whole-source equivalence.",
+  "checks": [
+    {
+      "xyz": [
+        1109,
+        397,
+        46
+      ],
+      "export": 7337,
+      "raw": 7337,
+      "content_range": "bytes 387504298-387504299/17179869184"
+    },
+    {
+      "xyz": [
+        1305,
+        434,
+        1126
+      ],
+      "export": 7097,
+      "raw": 7097,
+      "content_range": "bytes 9447352882-9447352883/17179869184"
+    },
+    {
+      "xyz": [
+        1696,
+        1008,
+        2032
+      ],
+      "export": 7913,
+      "raw": 7913,
+      "content_range": "bytes 17049783616-17049783617/17179869184"
+    }
+  ]
+}

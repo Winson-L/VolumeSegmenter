@@ -1,0 +1,27 @@
+{
+  "name": "kingsnake",
+  "source_scale": 0,
+  "dtype": "uint8",
+  "selected_voxels": 363911442,
+  "bricks": 96573,
+  "exact_selected_intensity_histogram": true,
+  "stored_voxels_checked_against_raw": true,
+  "orthogonal_mip_checks": [
+    {
+      "axis": 0,
+      "different_pixels": 0,
+      "pixels": 1048576
+    },
+    {
+      "axis": 1,
+      "different_pixels": 0,
+      "pixels": 814080
+    },
+    {
+      "axis": 2,
+      "different_pixels": 0,
+      "pixels": 814080
+    }
+  ],
+  "limitations": "MIP equality is not a DVR framebuffer comparison. Threshold preservation is not anatomical validation."
+}

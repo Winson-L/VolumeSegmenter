@@ -1,0 +1,59 @@
+{
+  "schema_version": 4,
+  "format": "compact-cropped-bricks",
+  "name": "woodbranch",
+  "source_url": "https://ome-zarr-scivis.s3.us-east-1.amazonaws.com/v0.5/96x2/woodbranch.ome.zarr",
+  "source_scale": 0,
+  "original_file": null,
+  "dimensions_xyz": [
+    2048,
+    2048,
+    2048
+  ],
+  "spacing_xyz": [
+    1.8e-05,
+    1.8e-05,
+    1.8e-05
+  ],
+  "dtype": "uint16",
+  "bytes_per_voxel": 2,
+  "brick_xyz": [
+    16,
+    16,
+    16
+  ],
+  "grid_xyz": [
+    128,
+    128,
+    128
+  ],
+  "cutoff": 7000,
+  "value_max": 57147,
+  "selected_voxels": 92042622,
+  "bricks": 71650,
+  "density_file": "density.raw",
+  "pages_file": "pages.raw",
+  "density_bytes": 357064428,
+  "page_bytes": 33554432,
+  "density_sha256": "79a72c52fb3dbd57d9cd70029b732440ee805097d515dfd7ad195647f91bf39d",
+  "pages_sha256": "bdbe3ed9a76099c1932b744b9ceea2cc5bff70174a00c6bb53bfad97a5c8d953",
+  "source_chunk_hash_chain": "1546e03d3efa74e0c04de3096a3d92fbe59a39aa3d2ee29381155fc9c79464d4",
+  "source_bytes": 17179869184,
+  "transfer_bytes": 5553346489,
+  "fixed_brick_bytes": 586956800,
+  "bounds_xyz": {
+    "lo": [
+      301,
+      322,
+      39
+    ],
+    "hi": [
+      1780,
+      1024,
+      2048
+    ]
+  },
+  "method": "Strict raw intensity > cutoff; no SLIC, component deletion, quantization or downsampling",
+  "processing_seconds": 791.6299472079845,
+  "peak_rss_bytes": 325533696
+}

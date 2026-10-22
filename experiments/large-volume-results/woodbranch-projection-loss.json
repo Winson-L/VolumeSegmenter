@@ -1,0 +1,20 @@
+[
+  {
+    "axis": 0,
+    "unfiltered_mip_pixels": 4194304,
+    "pixels_changed_by_cutoff": 1814659,
+    "target_vs_export_different_pixels": 0
+  },
+  {
+    "axis": 1,
+    "unfiltered_mip_pixels": 4194304,
+    "pixels_changed_by_cutoff": 1347331,
+    "target_vs_export_different_pixels": 0
+  },
+  {
+    "axis": 2,
+    "unfiltered_mip_pixels": 4194304,
+    "pixels_changed_by_cutoff": 775165,
+    "target_vs_export_different_pixels": 0
+  }
+]

@@ -1,0 +1,59 @@
+{
+  "schema_version": 4,
+  "format": "compact-cropped-bricks",
+  "name": "kingsnake",
+  "source_url": "http://klacansky.com/open-scivis-datasets/kingsnake/",
+  "source_scale": 0,
+  "original_file": "original.raw",
+  "dimensions_xyz": [
+    1024,
+    1024,
+    795
+  ],
+  "spacing_xyz": [
+    0.03174,
+    0.03174,
+    0.0688
+  ],
+  "dtype": "uint8",
+  "bytes_per_voxel": 1,
+  "brick_xyz": [
+    16,
+    16,
+    16
+  ],
+  "grid_xyz": [
+    64,
+    64,
+    50
+  ],
+  "cutoff": 40,
+  "value_max": 255,
+  "selected_voxels": 363911442,
+  "bricks": 96573,
+  "density_file": "density.raw",
+  "pages_file": "pages.raw",
+  "density_bytes": 376348493,
+  "page_bytes": 3276800,
+  "density_sha256": "ad8859cff2063b32ffebc34b314b22e8bc1d6448077aa9a7b5351de0707e0ce4",
+  "pages_sha256": "d5e6ba66f7218ae2cdf6a09bd884134fccaa423adfd27f81ecaec5147d44b700",
+  "source_chunk_hash_chain": "31e5cc7a508f8842fd088110188a815e5f74469715a6dc543285f393eed08087",
+  "source_bytes": 833617920,
+  "transfer_bytes": 0,
+  "fixed_brick_bytes": 395563008,
+  "bounds_xyz": {
+    "lo": [
+      60,
+      75,
+      3
+    ],
+    "hi": [
+      1004,
+      1011,
+      795
+    ]
+  },
+  "method": "Strict raw intensity > cutoff; no SLIC, component deletion, quantization or downsampling",
+  "processing_seconds": 7.983044416992925,
+  "peak_rss_bytes": 247857152
+}

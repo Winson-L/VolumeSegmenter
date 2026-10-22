@@ -1,0 +1,103 @@
+{
+  "dataset": "skull-validation",
+  "source_bytes": 16777216,
+  "cutoff": 60,
+  "resolution": [
+    640,
+    480
+  ],
+  "step": 1,
+  "window_max": 255,
+  "source_scale": 0,
+  "dtype": "uint8",
+  "original_skipped": null,
+  "image_checks": [
+    {
+      "camera": [
+        1.5707963267948966,
+        0
+      ],
+      "different_channels": 0,
+      "max_byte_error": 0
+    },
+    {
+      "camera": [
+        0.6,
+        0.8
+      ],
+      "different_channels": 0,
+      "max_byte_error": 0
+    },
+    {
+      "camera": [
+        -0.35,
+        1.9
+      ],
+      "different_channels": 0,
+      "max_byte_error": 0
+    }
+  ],
+  "runs": [
+    {
+      "camera": [
+        1.5707963267948966,
+        0
+      ],
+      "mode": "original",
+      "gpu_median_ms": 2.099458,
+      "gpu_equivalent_fps": 476.3134104135449,
+      "texture_bytes": 16777233
+    },
+    {
+      "camera": [
+        1.5707963267948966,
+        0
+      ],
+      "mode": "compact",
+      "gpu_median_ms": 1.98952,
+      "gpu_equivalent_fps": 502.63380111785756,
+      "texture_bytes": 2400257
+    },
+    {
+      "camera": [
+        0.6,
+        0.8
+      ],
+      "mode": "compact",
+      "gpu_median_ms": 3.57375,
+      "gpu_equivalent_fps": 279.81811822315495,
+      "texture_bytes": 2400257
+    },
+    {
+      "camera": [
+        0.6,
+        0.8
+      ],
+      "mode": "original",
+      "gpu_median_ms": 1.890083,
+      "gpu_equivalent_fps": 529.0772944891838,
+      "texture_bytes": 16777233
+    },
+    {
+      "camera": [
+        -0.35,
+        1.9
+      ],
+      "mode": "original",
+      "gpu_median_ms": 3.327145,
+      "gpu_equivalent_fps": 300.5579859008249,
+      "texture_bytes": 16777233
+    },
+    {
+      "camera": [
+        -0.35,
+        1.9
+      ],
+      "mode": "compact",
+      "gpu_median_ms": 5.299124,
+      "gpu_equivalent_fps": 188.71043591355854,
+      "texture_bytes": 2400257
+    }
+  ],
+  "method": "Sequential modes, 3 views, 5 warmups+20 asynchronous GPU queries per mode/view; payload excludes CPU/browser/driver. Full source and selected source share cutoff, transfer, spacing and sample lattice."
+}

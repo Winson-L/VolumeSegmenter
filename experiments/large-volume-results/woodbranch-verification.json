@@ -1,0 +1,27 @@
+{
+  "name": "woodbranch",
+  "source_scale": 0,
+  "dtype": "uint16",
+  "selected_voxels": 92042622,
+  "bricks": 71650,
+  "exact_selected_intensity_histogram": true,
+  "stored_voxels_checked_against_raw": false,
+  "orthogonal_mip_checks": [
+    {
+      "axis": 0,
+      "different_pixels": 0,
+      "pixels": 4194304
+    },
+    {
+      "axis": 1,
+      "different_pixels": 0,
+      "pixels": 4194304
+    },
+    {
+      "axis": 2,
+      "different_pixels": 0,
+      "pixels": 4194304
+    }
+  ],
+  "limitations": "MIP equality is not a DVR framebuffer comparison. Threshold preservation is not anatomical validation."
+}

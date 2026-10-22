@@ -3,3 +3,4 @@ scikit-learn>=1.5,<2
 threadpoolctl>=3.5,<4
 scipy>=1.10,<2
 scikit-image>=0.25,<0.27
+zstandard>=0.25,<0.26

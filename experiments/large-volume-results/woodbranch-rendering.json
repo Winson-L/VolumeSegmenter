@@ -1,0 +1,121 @@
+{
+  "dataset": "woodbranch",
+  "source_bytes": 17179869184,
+  "cutoff": 7000,
+  "resolution": [
+    640,
+    480
+  ],
+  "step": 1,
+  "window_max": 57147,
+  "source_scale": 0,
+  "dtype": "uint16",
+  "original_skipped": "完整体素 16384.00 MiB 超过本实验 1024 MiB 单体预算（未执行分配，不等于实测 OOM）",
+  "image_checks": [],
+  "runs": [
+    {
+      "camera": [
+        1.5707963267948966,
+        0
+      ],
+      "mode": "compact",
+      "gpu_median_ms": 3.809583,
+      "gpu_equivalent_fps": 262.49592146962016,
+      "gpu_samples_ms": [
+        2.604624,
+        3.26725,
+        2.930708,
+        2.784208,
+        2.663624,
+        3.208083,
+        2.795374,
+        2.843874,
+        3.294291,
+        3.647875,
+        3.971291,
+        4.759166,
+        9.010583,
+        7.327125,
+        9.114541,
+        9.305958,
+        10.303791,
+        9.6515,
+        8.546458,
+        8.759499
+      ],
+      "texture_bytes": 390627329
+    },
+    {
+      "camera": [
+        0.6,
+        0.8
+      ],
+      "mode": "compact",
+      "gpu_median_ms": 3.936541,
+      "gpu_equivalent_fps": 254.03012441633402,
+      "gpu_samples_ms": [
+        3.474,
+        2.736291,
+        2.572249,
+        2.660625,
+        2.753166,
+        2.937749,
+        3.106999,
+        3.311374,
+        3.903166,
+        4.362416,
+        6.829999,
+        6.000833,
+        11.71475,
+        7.124499,
+        3.960791,
+        3.912291,
+        4.345458,
+        4.401625,
+        4.935999,
+        6.95475
+      ],
+      "texture_bytes": 390627329
+    },
+    {
+      "camera": [
+        -0.35,
+        1.9
+      ],
+      "mode": "compact",
+      "gpu_median_ms": 5.2148325,
+      "gpu_equivalent_fps": 191.76071331150138,
+      "gpu_samples_ms": [
+        4.134041,
+        3.660791,
+        3.604791,
+        3.611249,
+        3.925291,
+        4.053374,
+        4.42725,
+        4.814833,
+        5.210041,
+        5.219624,
+        6.379749,
+        10.756916,
+        11.102874,
+        8.457958,
+        5.496958,
+        5.914166,
+        4.158416,
+        7.728125,
+        6.669833,
+        10.205375
+      ],
+      "texture_bytes": 390627329
+    }
+  ],
+  "environment": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "renderer": "WebKit WebGL",
+    "max_3d_texture_size": 2048,
+    "max_2d_texture_size": 16384,
+    "original_budget_bytes": 1073741824
+  },
+  "method": "Sequential modes, 3 views, 5 warmups+20 asynchronous GPU queries per mode/view; payload excludes CPU/browser/driver. Full source and selected source share cutoff, transfer, spacing and sample lattice."
+}

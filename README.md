@@ -8,6 +8,10 @@ The current experiment asks:
 2. How do all-block and single-block rendering differ in GPU time and resident texture payload?
 3. Does hiding a block save memory, or must its texture be released?
 
+## Large-volume experiment
+
+Bounded-memory preprocessing and compact integer textures now support full-resolution uint8/uint16 sources. See [reproduction and scope](docs/LARGE_VOLUMES.md) and [measurements](experiments/large-volume-results/RESULTS.md) for 795 MiB Kingsnake and 16 GiB Woodbranch. This path isolates explicit intensity selection; tiled SLIC and runtime residency streaming remain future work.
+
 ## New: content-driven logical volumes
 
 The new path implements **3D SLIC candidate regions → constrained graph selection → cropped sparse bricks → logical groups**. It preserves the selected voxels exactly; the target-selection rule remains explicitly lossy. Parent AABBs store references, never dense volumes. The viewer uses a shared texture atlas and page table rather than one sampler per component.

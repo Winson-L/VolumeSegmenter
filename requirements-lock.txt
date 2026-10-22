@@ -12,3 +12,4 @@ scikit-learn==1.9.1
 scipy==1.18.1
 threadpoolctl==3.7.0
 tifffile==2026.10.15
+zstandard==0.25.0
