@@ -13,7 +13,7 @@ import time
 import numpy as np
 from skimage.segmentation import slic
 from threadpoolctl import threadpool_limits
-from extractVolume import read_volume
+from pipeline.extractVolume import read_volume
 
 
 def digest(data):

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 import numpy as np
-from supervolume import analyze, region_graph, select_groups, export_bricks, reconstruct_sparse, extract_selected
+from pipeline.supervolume import analyze, region_graph, select_groups, export_bricks, reconstruct_sparse, extract_selected
 
 
 def analysis_for(volume, labels):

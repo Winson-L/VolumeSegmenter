@@ -156,6 +156,6 @@ Most individual blocks and their matched monolith ROI controls have similar time
 
 ## Reproduction and scope
 
-Run `python foreground_study.py --output experiments/foreground` in a fresh output directory, serve the repository, open `webgl_volume_rendering.html?study=foreground`, and click Compare. Use Download comparison JSON to export. The study generates matching cropped monolith controls alongside each full-resolution preset. [Raw report](rendering.json) includes every sample, per-run parameters, component coordinates, input hashes and browser identity. [Selection losses](RESULTS.md) are separate from rendering speed.
+Run `python -m pipeline.foreground_study --output experiments/foreground` in a fresh output directory, serve the repository, open `webgl_volume_rendering.html?study=foreground`, and click Compare. Use Download comparison JSON to export. The study generates matching cropped monolith controls alongside each full-resolution preset. [Raw report](rendering.json) includes every sample, per-run parameters, component coordinates, input hashes and browser identity. [Selection losses](RESULTS.md) are separate from rendering speed.
 
 Spatial partitioning preserves all voxels of the selected full-resolution reference, including thin branches retained by connected filtering. It cannot recover a structure deleted by threshold/size filtering. Calling discarded regions unimportant requires a task-specific mask or annotated reference; intensity survival alone does not establish that.

@@ -49,7 +49,7 @@ window.addEventListener('message',e=>{
  if(ready.every(Boolean))$('status').textContent=staticReference?'右侧可旋转 · 左侧为静态外观参考，视角、阈值与传递函数不同':'已同步 · 相同视角、缩放、显示阈值和采样步长';sync();
 });
 
-const manifest=large?'./experiments/large-volumes/'+(dataset+'-groups')+'/metadata.json':params.get('manifest')||'./experiments/supervolume/selected8/metadata.json';
+const manifest=large?'../experiments/large-volumes/'+(dataset+'-groups')+'/metadata.json':params.get('manifest')||'../experiments/supervolume/selected8/metadata.json';
 if(large){
  $('transferPanel').hidden=false;$('groupPanel').hidden=false;$('groups').closest('label').hidden=true;$('referenceControl').hidden=false;$('windowControl').hidden=false;
  const cutoff=dataset==='woodbranch'?5000:dataset==='kingsnake'?40:32,max=dataset==='woodbranch'?57147:255;

@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 import numpy as np
 import sklearn
-from extractVolume import extract, read_volume, reconstruct
+from pipeline.extractVolume import extract, read_volume, reconstruct
 
 
 def run(input_path, shape, output):
@@ -47,7 +47,7 @@ def run(input_path, shape, output):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--input', default='skull_256x256x256_uint8.raw')
+    p.add_argument('--input', default='data/skull_256x256x256_uint8.raw')
     p.add_argument('--shape', type=int, nargs=3, default=[256, 256, 256])
     p.add_argument('--output', default='experiments/spatial')
     args = p.parse_args()

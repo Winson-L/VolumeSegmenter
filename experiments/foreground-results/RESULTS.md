@@ -21,7 +21,7 @@ Each block stores its own tight bounding box and original-space origin. Zeros in
 
 Connected filtering uses six-neighbor connectivity and preserves entire surviving regions. Conservative uses threshold 30/minimum 512; focused uses 60/512; aggressive uses 90/128. Opening uses the automatic threshold followed by 3³ opening and minimum 512. Legacy audits border removal and erosion; it does not reproduce historical 5.85 MiB files with missing spacing metadata.
 
-Reproduce: `python foreground_study.py --output experiments/foreground`, then serve the repository and open `webgl_volume_rendering.html?study=foreground`. The saved [report](report.json) includes the input hash, environment, parameters, counts and reconstruction checks. Payload excludes JSON metadata, driver overhead and framebuffers. See [the complete new rendering comparison](PERFORMANCE.md) for these filtered presets; previous spatial timing results are a separate session.
+Reproduce: `python -m pipeline.foreground_study --output experiments/foreground`, then serve the repository and open `webgl_volume_rendering.html?study=foreground`. The saved [report](report.json) includes the input hash, environment, parameters, counts and reconstruction checks. Payload excludes JSON metadata, driver overhead and framebuffers. See [the complete new rendering comparison](PERFORMANCE.md) for these filtered presets; previous spatial timing results are a separate session.
 
 Browser check: all focused blocks render together at their original positions; selecting only block 1 releases the others and reduces resident payload from 11.58 MiB to 1.46 MiB. Screenshots use identical camera and cutoff 60; this display threshold hides discarded low-intensity data and is not a full fidelity test.
 

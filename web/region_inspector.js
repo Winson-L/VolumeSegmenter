@@ -1,5 +1,5 @@
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search);
-const base=new URL(params.get('analysis')||'./experiments/supervolume/analysis/',location.href),source=new URL(params.get('input')||'./skull_256x256x256_uint8.raw',location.href);
+const base=new URL(params.get('analysis')||'../experiments/supervolume/analysis/',location.href),source=new URL(params.get('input')||'../data/skull_256x256x256_uint8.raw',location.href);
 const seeds=new Set();let analysis,values,labels,regions,adjacency,chosen,dimensions,last=null;
 async function read(url){const r=await fetch(url);if(!r.ok)throw Error(`${r.status}: ${url}`);return r;}
 function rule(){const low=+$('low').value,high=+$('high').value,fraction=+$('fraction').value,boundary=+$('boundary').value;
@@ -14,7 +14,7 @@ function update(){try{
  else{const queue=[...seeds].filter(id=>eligible.has(id));chosen=new Set(queue);for(let k=0;k<queue.length;k++)for(const e of adjacency.get(queue[k])||[]){if(eligible.has(e.id)&&!chosen.has(e.id)&&e.delta<=g.max_boundary_delta){chosen.add(e.id);queue.push(e.id);}}}
  $('status').textContent=`${chosen.size} regions selected; ${seeds.size} seeds. ${rejected.length?'Some seeds fail the target rule: adjust the rule or clear them.':''}`;
  $('download').disabled=rejected.length>0||(g.mode==='seeded'&&!seeds.size);
- paint(g);$('command').textContent='python supervolume.py export --input skull_256x256x256_uint8.raw --analysis experiments/supervolume/analysis --config selection.json --output experiments/supervolume/my-selection';
+ paint(g);$('command').textContent='python -m pipeline.supervolume export --input data/skull_256x256x256_uint8.raw --analysis experiments/supervolume/analysis --config selection.json --output experiments/supervolume/my-selection';
  }catch(e){$('status').textContent=e.message;$('download').disabled=true;}}
 function paint(g){const [nx,ny]=dimensions,z=+$('slice').value,c=$('sliceCanvas'),ctx=c.getContext('2d');c.width=nx;c.height=ny;const image=ctx.createImageData(nx,ny),offset=z*nx*ny;
  for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const j=y*nx+x,i=offset+j,v=values[i],label=labels[i],on=chosen.has(label)&&v>0&&(!g.clip_to_range||(v>=g.intensity_range[0]&&v<=g.intensity_range[1]));let r=v,green=v,b=v;

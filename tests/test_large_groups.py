@@ -2,9 +2,9 @@ import tempfile,unittest
 from pathlib import Path
 import numpy as np
 from test_large_volume import LocalSource
-from large_volume import export
-from group_large_volume import group_volume
-from verify_large_groups import verify_groups
+from pipeline.large_volume import export
+from pipeline.group_large_volume import group_volume
+from pipeline.verify_large_groups import verify_groups
 
 class GroupTests(unittest.TestCase):
     def test_exact_ownership_masks_and_partial_words(self):

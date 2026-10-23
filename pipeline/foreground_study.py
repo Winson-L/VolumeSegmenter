@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 import numpy as np
 import scipy
-from extractVolume import extract, read_volume, reconstruct, select_foreground
+from pipeline.extractVolume import extract, read_volume, reconstruct, select_foreground
 
 
 def run(source, shape, output):
@@ -50,7 +50,7 @@ def run(source, shape, output):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--input', default='skull_256x256x256_uint8.raw')
+    parser.add_argument('--input', default='data/skull_256x256x256_uint8.raw')
     parser.add_argument('--shape', nargs=3, type=int, default=[256,256,256])
     parser.add_argument('--output', default='experiments/foreground')
     args = parser.parse_args()

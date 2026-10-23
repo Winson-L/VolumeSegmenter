@@ -58,7 +58,7 @@ At support 0, this unseeded range-clipped rule is equivalent to the scalar thres
 
 ## Reproduce
 
-`python supervolume_study.py --output experiments/supervolume/repeat` produces the analysis, all three exports and a sensitivity report from scratch. Point `sparse_volume.html?manifest=./experiments/supervolume/repeat/selected8/metadata.json` at each layout, then click Compare. This output is ignored by Git; raw datasets are not duplicated in the repository.
+`python -m pipeline.supervolume_study --output experiments/supervolume/repeat` produces the analysis, all three exports and a sensitivity report from scratch. Point `sparse_volume.html?manifest=../experiments/supervolume/repeat/selected8/metadata.json` at each layout, then click Compare. This output is ignored by Git; raw datasets are not duplicated in the repository.
 
 21 automated tests pass, including seeded drift prevention, overlap ownership, partial bricks, empty/full/non-cubic data and thin-feature preservation during packing. Browser shader compilation and console checks passed. Results remain a one-real-dataset PoC plus synthetic fixtures.
 

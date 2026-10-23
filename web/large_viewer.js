@@ -1,6 +1,6 @@
 const $=id=>document.getElementById(id),canvas=$('canvas'),gl=canvas.getContext('webgl2',{antialias:false,preserveDrawingBuffer:true});
 if(!gl)throw Error('需要 WebGL2');
-const params=new URLSearchParams(location.search),url=new URL(params.get('manifest')||'./experiments/large-volumes/kingsnake40/metadata.json',location.href);
+const params=new URLSearchParams(location.search),url=new URL(params.get('manifest')||'../experiments/large-volumes/kingsnake40/metadata.json',location.href);
 const embedded=params.has('embed');
 if(embedded){document.body.classList.add('embedded');}
 const ext=gl.getExtension('EXT_disjoint_timer_query_webgl2'),MiB=n=>(n/1048576).toFixed(2)+' MiB';

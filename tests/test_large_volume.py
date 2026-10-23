@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 import numpy as np
-from large_volume import crop_bricks, export
+from pipeline.large_volume import crop_bricks, export
 
 
 class LocalSource:

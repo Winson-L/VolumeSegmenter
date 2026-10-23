@@ -2,10 +2,10 @@
 import argparse,hashlib,json
 from pathlib import Path
 import urllib.request
-from large_volume import RawSource,export
-from group_large_volume import group_volume
-from verify_large_volume import verify
-from verify_large_groups import verify_groups
+from pipeline.large_volume import RawSource,export
+from pipeline.group_large_volume import group_volume
+from pipeline.verify_large_volume import verify
+from pipeline.verify_large_groups import verify_groups
 
 DATASETS={
  'bonsai':(256,'b34156a0ffc80ffaf84d069f3d05a40fdd999a35f05492829a2b0c13403a3147e73712b1d10c2cc34da66a59540a1632dae6adc96f3ebf3efa5d4d6c10598997','volvis.org; S. Roettger, VIS, University of Stuttgart'),

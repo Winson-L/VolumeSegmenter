@@ -34,7 +34,7 @@ The UI displays each group's bytes and supports multiple selections. It releases
 
 ## Reproduce
 
-See [the guide](../../docs/LARGE_VOLUMES.md). Run the exporter/grouping/verification commands, start the HTTP server, and use the standalone viewer's color preset “内部结构彩色” and benchmark button for each grouped manifest. Save the JSON reports here as `<dataset>-rendering.json`, then run `python summarize_grouped_results.py`.
+See [the guide](../../docs/LARGE_VOLUMES.md). Run the exporter/grouping/verification commands, start the HTTP server, and use the standalone viewer's color preset “内部结构彩色” and benchmark button for each grouped manifest. Save the JSON reports here as `<dataset>-rendering.json`, then run `python -m pipeline.summarize_grouped_results`.
 
 The comparison page dataset selector exposes all five grouped datasets plus the existing Skull path. The original Skull SLIC experiment remains a separate algorithm baseline.
 

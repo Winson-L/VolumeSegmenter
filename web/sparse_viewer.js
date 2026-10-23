@@ -60,7 +60,7 @@ gl.useProgram(program);const vao=gl.createVertexArray();gl.bindVertexArray(vao);
 const loc=name=>gl.getUniformLocation(program,name), median=a=>{const s=[...a].sort((a,b)=>a-b);return s.length?(s[Math.floor((s.length-1)/2)]+s[Math.floor(s.length/2)])/2:null;};
 const frame=()=>new Promise(r=>requestAnimationFrame(r));
 let meta,density,owners,texture,pageTexture,slots=[1,1,1],selected=new Set(),bounds,mode=1,payload=0,pageBytes=0,activeBricks=0,busy=false,report=null,fixed=null;
-const url=new URL(new URLSearchParams(location.search).get('manifest')||'./experiments/supervolume/selected/metadata.json',location.href);
+const url=new URL(new URLSearchParams(location.search).get('manifest')||'../experiments/supervolume/selected/metadata.json',location.href);
 async function fetchData(path){const r=await fetch(new URL(path,url));if(!r.ok)throw Error(`${r.status}: ${path}`);return r;}
 function texture3D(data,dims,integer=false){
  if(dims.some(n=>n>gl.getParameter(gl.MAX_3D_TEXTURE_SIZE)))throw Error('Texture exceeds device limits');
@@ -209,7 +209,7 @@ await action(async()=>{
  meta=await(await fetchData(url.href)).json();
  if(meta.schema_version!==3||meta.format!=='cropped-grid-bricks')throw Error('Unsupported sparse manifest');
  if(originalMode){
-  const rawURL=new URL(params.get('input')||'./skull_256x256x256_uint8.raw',location.href);
+  const rawURL=new URL(params.get('input')||'../data/skull_256x256x256_uint8.raw',location.href);
   const raw=new Uint8Array(await(await fetchData(rawURL.href)).arrayBuffer());
   if(raw.length!==meta.dimensions_xyz.reduce((a,b)=>a*b,1))throw Error('Original dimensions do not match');
   const sha=[...new Uint8Array(await crypto.subtle.digest('SHA-256',raw))].map(b=>b.toString(16).padStart(2,'0')).join('');

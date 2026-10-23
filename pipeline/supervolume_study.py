@@ -8,8 +8,8 @@ import time
 
 import numpy as np
 import skimage
-from extractVolume import read_volume
-from supervolume import analyze, select_groups, export_bricks, fresh
+from pipeline.extractVolume import read_volume
+from pipeline.supervolume import analyze, select_groups, export_bricks, fresh
 
 
 def run(source, shape, config_path, output):
@@ -42,6 +42,6 @@ def run(source, shape, config_path, output):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--input',default='skull_256x256x256_uint8.raw');p.add_argument('--shape',nargs=3,type=int,default=[256]*3)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--input',default='data/skull_256x256x256_uint8.raw');p.add_argument('--shape',nargs=3,type=int,default=[256]*3)
     p.add_argument('--config',default='configs/skull-candidates.json');p.add_argument('--output',required=True)
     a=p.parse_args();run(a.input,a.shape,a.config,a.output)

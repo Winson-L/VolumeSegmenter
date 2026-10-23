@@ -21,42 +21,42 @@ This is a scoped engineering choice, not evidence that SLIC is universally best.
 
 ```bash
 pip install -r requirements-lock.txt
-python supervolume.py analyze --input skull_256x256x256_uint8.raw \
+python -m pipeline.supervolume analyze --input data/skull_256x256x256_uint8.raw \
   --shape 256 256 256 --output experiments/supervolume/analysis
-python supervolume.py export --input skull_256x256x256_uint8.raw \
+python -m pipeline.supervolume export --input data/skull_256x256x256_uint8.raw \
   --analysis experiments/supervolume/analysis --config configs/skull-candidates.json \
   --output experiments/supervolume/selected --brick-size 16
 python -m http.server 8765 --bind 127.0.0.1
 ```
 
-Open `http://127.0.0.1:8765/sparse_volume.html`. The viewer reads only the selected export. The original is never fetched by this viewer. Full original-sized reconstruction is allocated only when explicitly running the matched monolith benchmark.
+Open `http://127.0.0.1:8765/web/sparse_volume.html`. The viewer reads only the selected export. The original is never fetched by this viewer. Full original-sized reconstruction is allocated only when explicitly running the matched monolith benchmark.
 
-For repeat runs, choose empty output folders. Change the viewer manifest using `?manifest=./experiments/supervolume/my-selection/metadata.json`. Extraction is offline/in-memory, not out of core.
+For repeat runs, choose empty output folders. Change the viewer manifest using `?manifest=../experiments/supervolume/my-selection/metadata.json`. Extraction is offline/in-memory, not out of core.
 
 ## Side-by-side original / selected comparison
 
 Export the 8³ variant (once, into an empty folder):
 
 ```bash
-python supervolume.py export --input skull_256x256x256_uint8.raw \
+python -m pipeline.supervolume export --input data/skull_256x256x256_uint8.raw \
   --analysis experiments/supervolume/analysis --config configs/skull-candidates.json \
   --output experiments/supervolume/selected8 --brick-size 8
 ```
 
-Open `http://127.0.0.1:8765/compare_volumes.html`. The left panel loads the complete original RAW and verifies its hash against the export metadata; the right loads only the selected export. Drag either panel to rotate both with an arcball; scroll to zoom both. The right group selector changes only the selected content. Cutoff and sampling step are shared. Memory labels show allocated volume texture payload, not total browser or GPU memory; both panels are resident simultaneously. Continuous FPS measurement is enabled by default and can be paused. Each panel reports its requestAnimationFrame drawing cadence over roughly one second, asynchronous GPU query median time when available, and actual render resolution. Both panels share the GPU and refresh-rate cap: equal FPS does not imply equal rendering cost. Background samples and disjoint GPU queries are discarded. These live readings are not an isolated timing benchmark.
+Open `http://127.0.0.1:8765/web/compare_volumes.html`. The left panel loads the complete original RAW and verifies its hash against the export metadata; the right loads only the selected export. Drag either panel to rotate both with an arcball; scroll to zoom both. The right group selector changes only the selected content. Cutoff and sampling step are shared. Memory labels show allocated volume texture payload, not total browser or GPU memory; both panels are resident simultaneously. Continuous FPS measurement is enabled by default and can be paused. Each panel reports its requestAnimationFrame drawing cadence over roughly one second, asynchronous GPU query median time when available, and actual render resolution. Both panels share the GPU and refresh-rate cap: equal FPS does not imply equal rendering cost. Background samples and disjoint GPU queries are discarded. These live readings are not an isolated timing benchmark.
 
-Use `?manifest=./experiments/supervolume/selected/metadata.json` to compare the existing 16³ export, or specify another manifest and `&input=./path/to/original.raw`. The selected data is intentionally lossy; matching camera settings do not establish anatomical preservation.
+Use `?manifest=../experiments/supervolume/selected/metadata.json` to compare the existing 16³ export, or specify another manifest and `&input=./path/to/original.raw`. The selected data is intentionally lossy; matching camera settings do not establish anatomical preservation.
 
 ## Choose a target
 
-Open `http://127.0.0.1:8765/region_inspector.html`. Move the Z slice, click one or more regions, adjust the fixed intensity interval, minimum support and boundary contrast, and inspect the cyan preview. Yellow indicates seed regions. Download the config and pass it to `supervolume.py export`. The preview is a slice of a 3D graph selection, not a 2D flood fill.
+Open `http://127.0.0.1:8765/web/region_inspector.html`. Move the Z slice, click one or more regions, adjust the fixed intensity interval, minimum support and boundary contrast, and inspect the cyan preview. Yellow indicates seed regions. Download the config and pass it to `supervolume.py export`. The preview is a slice of a 3D graph selection, not a 2D flood fill.
 
 The inspector needs the analysis cache and original to make a selection. These are working inputs and are not bundled into the selected export. Alternate inputs use `?analysis=./path/to/cache/&input=./path/to/input.raw`. Its displayed CLI example is for the included skull; use your own paths for other inputs. The inspector exports one group per config; combine multiple group entries in JSON for multi-target exports.
 
 For CLI inspection:
 
 ```bash
-python supervolume.py inspect --analysis experiments/supervolume/analysis --xyz 128 128 128
+python -m pipeline.supervolume inspect --analysis experiments/supervolume/analysis --xyz 128 128 128
 ```
 
 A group can be specified as:

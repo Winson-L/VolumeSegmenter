@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 import numpy as np
-from extractVolume import extract, read_volume, reconstruct, select_foreground
+from pipeline.extractVolume import extract, read_volume, reconstruct, select_foreground
 
 
 class PipelineTests(unittest.TestCase):

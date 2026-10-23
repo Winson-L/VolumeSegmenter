@@ -100,7 +100,7 @@ let textures = new Map(), meta = null, manifest = null, visible = [];
 let loading = false, measuring = false, suite = null, clip = null;
 let fixedResolution = null;
 const study = new URLSearchParams(location.search).get('study') === 'foreground';
-const base = new URL(new URLSearchParams(location.search).get('base') || (study ? './experiments/foreground/' : './experiments/spatial/'), location.href);
+const base = new URL(new URLSearchParams(location.search).get('base') || (study ? '../experiments/foreground/' : '../experiments/spatial/'), location.href);
 if (study) {
     const variants = [['original', 'Original'], ['threshold', 'Automatic threshold only'],
         ['conservative', 'Conservative · threshold 30 + region filter'],

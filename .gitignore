@@ -13,3 +13,6 @@ experiments/foreground/
 experiments/supervolume/
 
 experiments/large-volumes/
+
+# User inputs; existing tracked Skull files remain versioned.
+data/*.raw

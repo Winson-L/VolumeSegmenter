@@ -2,7 +2,7 @@
 import argparse,json
 from pathlib import Path
 import numpy as np
-from verify_large_volume import file_hash
+from pipeline.verify_large_volume import file_hash
 
 def verify_groups(grouped, original):
     path=Path(grouped);root=Path(original)

@@ -28,19 +28,19 @@ mkdir -p experiments/large-volumes
 curl -L --fail --retry 2 \
   http://klacansky.com/open-scivis-datasets/kingsnake/kingsnake_1024x1024x795_uint8.raw \
   -o experiments/large-volumes/kingsnake-original.raw
-python large_volume.py export --name kingsnake --cutoff 40 --save-original \
+python -m pipeline.large_volume export --name kingsnake --cutoff 40 --save-original \
   --raw experiments/large-volumes/kingsnake-original.raw \
   --output experiments/large-volumes/kingsnake40
-python large_volume.py export --name woodbranch --cutoff 7000 \
+python -m pipeline.large_volume export --name woodbranch --cutoff 7000 \
   --output experiments/large-volumes/woodbranch7000
-python verify_large_volume.py experiments/large-volumes/kingsnake40
-python verify_large_volume.py experiments/large-volumes/woodbranch7000
+python -m pipeline.verify_large_volume experiments/large-volumes/kingsnake40
+python -m pipeline.verify_large_volume experiments/large-volumes/woodbranch7000
 python -m http.server 8765 --bind 127.0.0.1
 ```
 
 Use an empty output directory on each export. A failed run does not produce a completed manifest. The RAW download plus saved Kingsnake reference require two 795 MiB files. Woodbranch reads source chunks without saving a 16 GiB RAW. Three orthogonal reference MIPs are accumulated during input processing.
 
-Open `http://127.0.0.1:8765/large_volume.html` for Kingsnake, or `http://127.0.0.1:8765/large_volume.html?manifest=./experiments/large-volumes/woodbranch7000/metadata.json` for Woodbranch.
+Open `http://127.0.0.1:8765/web/large_volume.html` for Kingsnake, or `http://127.0.0.1:8765/web/large_volume.html?manifest=../experiments/large-volumes/woodbranch7000/metadata.json` for Woodbranch.
 
 ## Measurements and interpretation
 
@@ -56,9 +56,9 @@ Cutoff 40 (Kingsnake) and 7000 (Woodbranch) are explicit exploratory targets, in
 
 ## Side-by-side reference viewer
 
-Open `compare_volumes.html?dataset=kingsnake` for full-resolution original versus pipeline, with shared arcball, window, display threshold and step, and per-panel live FPS/GPU time. The dataset selector also keeps the existing Skull comparison available.
+Open `web/compare_volumes.html?dataset=kingsnake` for full-resolution original versus pipeline, with shared arcball, window, display threshold and step, and per-panel live FPS/GPU time. The dataset selector also keeps the existing Skull comparison available.
 
-Open `compare_volumes.html?dataset=woodbranch` for the [Kiln Gallery](https://kilnrender.com/gallery) Woodbranch DVR image beside the live full-resolution pipeline. Kingsnake also offers the Gallery's MIP image via the reference selector. Images load directly from the credited source; an offline or failed image load shows a source-link fallback. These are **external appearance references**, with different camera and transfer settings, not pixel-equality controls. Only interactive panels rotate; static references have no FPS or GPU-memory measurement.
+Open `web/compare_volumes.html?dataset=woodbranch` for the [Kiln Gallery](https://kilnrender.com/gallery) Woodbranch DVR image beside the live full-resolution pipeline. Kingsnake also offers the Gallery's MIP image via the reference selector. Images load directly from the credited source; an offline or failed image load shows a source-link fallback. These are **external appearance references**, with different camera and transfer settings, not pixel-equality controls. Only interactive panels rotate; static references have no FPS or GPU-memory measurement.
 
 The attempted Woodbranch source scale-2 reference was rejected because decoded chunk size disagreed with metadata. No invalid low-resolution source is displayed. Lowering the display threshold below the export cutoff cannot restore omitted pipeline voxels.
 
@@ -69,18 +69,18 @@ The latest grouped comparison and raw measurements are in [grouped-results](../e
 Reproduce the three additional small examples (downloads, SHA-512 verification, threshold extraction, automatic dense/masked storage, grouping and exact reconstruction checks):
 
 ```sh
-python prepare_examples.py
+python -m pipeline.prepare_examples
 ```
 
 For the existing large sources, use fresh directories:
 
 ```sh
-python group_large_volume.py experiments/large-volumes/kingsnake40 experiments/large-volumes/kingsnake-groups --edges 90 160
-python large_volume.py export --name woodbranch --cutoff 5000 --output experiments/large-volumes/woodbranch5000
-python verify_large_volume.py experiments/large-volumes/woodbranch5000
-python group_large_volume.py experiments/large-volumes/woodbranch5000 experiments/large-volumes/woodbranch-groups --edges 6000 9000
-python verify_large_groups.py experiments/large-volumes/kingsnake-groups experiments/large-volumes/kingsnake40
-python verify_large_groups.py experiments/large-volumes/woodbranch-groups experiments/large-volumes/woodbranch5000
+python -m pipeline.group_large_volume experiments/large-volumes/kingsnake40 experiments/large-volumes/kingsnake-groups --edges 90 160
+python -m pipeline.large_volume export --name woodbranch --cutoff 5000 --output experiments/large-volumes/woodbranch5000
+python -m pipeline.verify_large_volume experiments/large-volumes/woodbranch5000
+python -m pipeline.group_large_volume experiments/large-volumes/woodbranch5000 experiments/large-volumes/woodbranch-groups --edges 6000 9000
+python -m pipeline.verify_large_groups experiments/large-volumes/kingsnake-groups experiments/large-volumes/kingsnake40
+python -m pipeline.verify_large_groups experiments/large-volumes/woodbranch-groups experiments/large-volumes/woodbranch5000
 ```
 
 The grouping operates on the graph of retained 16³ brick cells, with median-intensity bands and six-neighbor edges. It does not run full-volume SLIC or infer tissue identity. Individual groups are the nine largest brick-graph components; the remaining components are explicitly pooled by intensity band. No component is discarded during grouping. Every brick has one owner, so selections are disjoint and totals are additive without duplication. A logical AABB never allocates a parent dense volume.
