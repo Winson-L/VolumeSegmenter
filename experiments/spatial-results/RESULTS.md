@@ -48,4 +48,4 @@ Memory is application-owned R8 voxel payload, not measured physical VRAM. The on
 
 ## Reproduce
 
-Run `python benchmark.py`, start a local HTTP server, open the viewer and click **Compare original / all / each block**. Full measurement JSON is available in the expandable panel as well as the download control. See the root README for commands and parameter meanings.
+Run `python -m pipeline.benchmark`, start a local HTTP server, open the viewer and click **Compare original / all / each block**. Full measurement JSON is available in the expandable panel as well as the download control. See the root README for commands and parameter meanings.
