@@ -1,0 +1,446 @@
+{
+  "schema_version": 4,
+  "format": "compact-cropped-bricks",
+  "name": "engine",
+  "source_url": "http://klacansky.com/open-scivis-datasets/engine/",
+  "source_scale": 0,
+  "original_file": "../engine32/original.raw",
+  "dimensions_xyz": [
+    256,
+    256,
+    128
+  ],
+  "spacing_xyz": [
+    1,
+    1,
+    1
+  ],
+  "dtype": "uint8",
+  "bytes_per_voxel": 1,
+  "brick_xyz": [
+    16,
+    16,
+    16
+  ],
+  "grid_xyz": [
+    16,
+    16,
+    8
+  ],
+  "cutoff": 32,
+  "value_max": 255,
+  "selected_voxels": 1311767,
+  "bricks": 738,
+  "density_file": "../engine32/density.raw",
+  "pages_file": "../engine32/pages.raw",
+  "density_bytes": 1311767,
+  "page_bytes": 32768,
+  "density_sha256": "8d2ea938680dcb81d5396dfa3fe1a24435b1c5630615d33cb6c86ceb0dcc932e",
+  "pages_sha256": "c76d988e160e60ab2f7056053fd0400bcd1de4317f5104ba43ea0ea30e64a128",
+  "source_chunk_hash_chain": "75dda3165e86bd0cec85c33d2f2b92c44a9d7ddddcaa3c00de895f6b4bf20f4f",
+  "source_bytes": 8388608,
+  "transfer_bytes": 0,
+  "fixed_brick_bytes": 3022848,
+  "bounds_xyz": {
+    "lo": [
+      61,
+      24,
+      0
+    ],
+    "hi": [
+      204,
+      223,
+      108
+    ]
+  },
+  "method": "Strict raw intensity > cutoff; no SLIC, component deletion, quantization or downsampling",
+  "processing_seconds": 0.1081432499922812,
+  "peak_rss_bytes": 137314304,
+  "storage_encoding": "masked32",
+  "pre_mask_density_bytes": 1932371,
+  "mask_bytes": 483528,
+  "groups": [
+    {
+      "mask_bytes": 452152,
+      "mask_file": "group-1-mask.raw",
+      "mask_sha256": "b89fb18b332ffc1caf407312ddaff74f3183babc8b45fe413db90b38e31a71cc",
+      "id": 1,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 96\u2013159 \u00b7 \u8fde\u901a\u533a\u57df 1",
+      "band": 1,
+      "median_range": [
+        96,
+        159
+      ],
+      "bricks": 592,
+      "selected_voxels": 1248173,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 1248173,
+      "index_bytes": 9472,
+      "density_file": "group-1.raw",
+      "density_sha256": "471728520eedfe4a30cb010d8154fcd852d39cce11324dffca60a889aff9703d",
+      "index_file": "group-1-index.raw",
+      "index_sha256": "250e3fe31101824395e41b24b90e54d705ff41109727a7be4272708f0b83b9c7",
+      "bounds_xyz": {
+        "lo": [
+          64,
+          24,
+          0
+        ],
+        "hi": [
+          203,
+          223,
+          108
+        ]
+      }
+    },
+    {
+      "mask_bytes": 5960,
+      "mask_file": "group-2-mask.raw",
+      "mask_sha256": "369d3621968559616a16f294f003678e277767c59f2d283c1bf545ee1d31f79b",
+      "id": 2,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 160\u2013255 \u00b7 \u8fde\u901a\u533a\u57df 2",
+      "band": 2,
+      "median_range": [
+        160,
+        255
+      ],
+      "bricks": 6,
+      "selected_voxels": 18707,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 18707,
+      "index_bytes": 96,
+      "density_file": "group-2.raw",
+      "density_sha256": "b717ac7be2ef55fdb08d8293eb9d4e1ea455b2fc3eae870bce0366dfec94ec7b",
+      "index_file": "group-2-index.raw",
+      "index_sha256": "c1d5b977a115bc180df2339eecd3dd823d5e0a3d0b02f2e6f4ea8b222725ce5f",
+      "bounds_xyz": {
+        "lo": [
+          96,
+          112,
+          0
+        ],
+        "hi": [
+          128,
+          144,
+          48
+        ]
+      }
+    },
+    {
+      "mask_bytes": 2512,
+      "mask_file": "group-3-mask.raw",
+      "mask_sha256": "d51ddd5f2e2e7e5f98502dd61dbf007a684970015a72cb3549ebd64d7f047d47",
+      "id": 3,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 160\u2013255 \u00b7 \u8fde\u901a\u533a\u57df 3",
+      "band": 2,
+      "median_range": [
+        160,
+        255
+      ],
+      "bricks": 4,
+      "selected_voxels": 6624,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 6624,
+      "index_bytes": 64,
+      "density_file": "group-3.raw",
+      "density_sha256": "532cc8c02f53cade5ff4ba20097da9d52a2fff8e002c0cd252ad126186839d8c",
+      "index_file": "group-3-index.raw",
+      "index_sha256": "ff37aef26b345c4185478d3a0482bc3b426e31d88c2c34cbfa4ab91bab0b7c7f",
+      "bounds_xyz": {
+        "lo": [
+          176,
+          112,
+          80
+        ],
+        "hi": [
+          192,
+          160,
+          108
+        ]
+      }
+    },
+    {
+      "mask_bytes": 1616,
+      "mask_file": "group-4-mask.raw",
+      "mask_sha256": "87ae9a03d4dd007c9027370b5df46162fbab78fda4551eae6d40696b2a5c36c5",
+      "id": 4,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 33\u201395 \u00b7 \u8fde\u901a\u533a\u57df 4",
+      "band": 0,
+      "median_range": [
+        33,
+        95
+      ],
+      "bricks": 18,
+      "selected_voxels": 4793,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 4793,
+      "index_bytes": 288,
+      "density_file": "group-4.raw",
+      "density_sha256": "1c101257caafb317c52a8faf8edde2b344b563aac2f1e3d217e0f0eb36936ab9",
+      "index_file": "group-4-index.raw",
+      "index_sha256": "cc867d6f1571e92281e03c2dd9645a2f9eaeb929b13e8708719d9ed25c57a87a",
+      "bounds_xyz": {
+        "lo": [
+          61,
+          148,
+          0
+        ],
+        "hi": [
+          64,
+          223,
+          108
+        ]
+      }
+    },
+    {
+      "mask_bytes": 1600,
+      "mask_file": "group-5-mask.raw",
+      "mask_sha256": "c0b5aae77be878687f5a31b1a12fdca8017d5c31a6852568f6cc61554640643d",
+      "id": 5,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 160\u2013255 \u00b7 \u8fde\u901a\u533a\u57df 5",
+      "band": 2,
+      "median_range": [
+        160,
+        255
+      ],
+      "bricks": 2,
+      "selected_voxels": 4402,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 4402,
+      "index_bytes": 32,
+      "density_file": "group-5.raw",
+      "density_sha256": "a4f9630efdfcac9636878bd69c1a717d1bd2aa963b77f2cf9a33258630004047",
+      "index_file": "group-5-index.raw",
+      "index_sha256": "3ef529b7c2e79a64b82e29abff3ca5225b9d9b7bc370a03956a74a1bf9ab7469",
+      "bounds_xyz": {
+        "lo": [
+          100,
+          144,
+          48
+        ],
+        "hi": [
+          125,
+          160,
+          64
+        ]
+      }
+    },
+    {
+      "mask_bytes": 1344,
+      "mask_file": "group-6-mask.raw",
+      "mask_sha256": "49f30300c71ad2918525019e9d2eedbe293f6381d32a6e0954de6c86fd6cc116",
+      "id": 6,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 160\u2013255 \u00b7 \u8fde\u901a\u533a\u57df 6",
+      "band": 2,
+      "median_range": [
+        160,
+        255
+      ],
+      "bricks": 3,
+      "selected_voxels": 3535,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 3535,
+      "index_bytes": 48,
+      "density_file": "group-6.raw",
+      "density_sha256": "b62cdc197e9a57d5c7b413845563b5fef0ad55a46228e467e2f2fbd7499ce658",
+      "index_file": "group-6-index.raw",
+      "index_sha256": "11f20e2ba46f47c4dffa9272e4f7118cd3aaba0bd8ac75b144dcdd4d93602a34",
+      "bounds_xyz": {
+        "lo": [
+          128,
+          64,
+          98
+        ],
+        "hi": [
+          144,
+          112,
+          108
+        ]
+      }
+    },
+    {
+      "mask_bytes": 3224,
+      "mask_file": "group-7-mask.raw",
+      "mask_sha256": "71811db0970a5ab27058896aa8fa4feab7f7c38e56c3d4314e1d1892503c4de6",
+      "id": 7,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 33\u201395 \u00b7 \u8fde\u901a\u533a\u57df 7",
+      "band": 0,
+      "median_range": [
+        33,
+        95
+      ],
+      "bricks": 17,
+      "selected_voxels": 3048,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 3048,
+      "index_bytes": 272,
+      "density_file": "group-7.raw",
+      "density_sha256": "10361b7d2f8518c45462fe993aacfdb3993e59f9037dd3daff16cb208a390e0b",
+      "index_file": "group-7-index.raw",
+      "index_sha256": "d0fb532205a4d5dedc9aff794bd1c31ce32c5d11cb270778a668a5e1f8db6279",
+      "bounds_xyz": {
+        "lo": [
+          67,
+          109,
+          7
+        ],
+        "hi": [
+          96,
+          176,
+          95
+        ]
+      }
+    },
+    {
+      "mask_bytes": 3872,
+      "mask_file": "group-8-mask.raw",
+      "mask_sha256": "259f7ec6129c521259727a5d7620cb37f1196384b5b9b5b083471a1f41e8a6f0",
+      "id": 8,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 33\u201395 \u00b7 \u8fde\u901a\u533a\u57df 8",
+      "band": 0,
+      "median_range": [
+        33,
+        95
+      ],
+      "bricks": 7,
+      "selected_voxels": 2991,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 2991,
+      "index_bytes": 112,
+      "density_file": "group-8.raw",
+      "density_sha256": "318ae241820ced0b74d3ae50da0920b640c7bb2e782a618430975b30f6517783",
+      "index_file": "group-8-index.raw",
+      "index_sha256": "88ee53493159c86b2136135cd34de561f0644661ce77d59d539fd6b06620ba89",
+      "bounds_xyz": {
+        "lo": [
+          144,
+          48,
+          48
+        ],
+        "hi": [
+          176,
+          96,
+          80
+        ]
+      }
+    },
+    {
+      "mask_bytes": 1088,
+      "mask_file": "group-9-mask.raw",
+      "mask_sha256": "8cc49c30d6fad81bf148326122538f2020599274ffe129e2b5d97704792f70f8",
+      "id": 9,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 160\u2013255 \u00b7 \u8fde\u901a\u533a\u57df 9",
+      "band": 2,
+      "median_range": [
+        160,
+        255
+      ],
+      "bricks": 2,
+      "selected_voxels": 2868,
+      "components": 1,
+      "pooled": false,
+      "density_bytes": 2868,
+      "index_bytes": 32,
+      "density_file": "group-9.raw",
+      "density_sha256": "a0c500713c018d43dc0804ea71f636769d33019b7361e7bbf2e876a55c0580fe",
+      "index_file": "group-9-index.raw",
+      "index_sha256": "dc569574053d306de2454be2dabfd7a1d40f42e10086474ed2dd792373e6118c",
+      "bounds_xyz": {
+        "lo": [
+          112,
+          32,
+          99
+        ],
+        "hi": [
+          128,
+          64,
+          108
+        ]
+      }
+    },
+    {
+      "mask_bytes": 7720,
+      "mask_file": "group-10-mask.raw",
+      "mask_sha256": "8c77c2d33286698f77ef185dacdd4b3ae8a786c722bc582bae77e33370bf6542",
+      "id": 10,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 33\u201395 \u00b7 \u96f6\u6563\u533a\u57df\u5408\u96c6",
+      "band": 0,
+      "median_range": [
+        33,
+        95
+      ],
+      "bricks": 82,
+      "selected_voxels": 10094,
+      "components": 34,
+      "pooled": true,
+      "density_bytes": 10094,
+      "index_bytes": 1312,
+      "density_file": "group-10.raw",
+      "density_sha256": "478f0d6ae7e6124f80d177138ee3d14b20852b193cdb24c9252c705ab7995160",
+      "index_file": "group-10-index.raw",
+      "index_sha256": "640abc3b0a7b634fdc148954d951a907be98579d1b1057735c00952958a45c02",
+      "bounds_xyz": {
+        "lo": [
+          62,
+          25,
+          0
+        ],
+        "hi": [
+          204,
+          214,
+          108
+        ]
+      }
+    },
+    {
+      "mask_bytes": 2440,
+      "mask_file": "group-11-mask.raw",
+      "mask_sha256": "b5d7f7ace2e5a0488c0c60f2aa8cd21f349cf50e654d3d6061ce866f22f164f9",
+      "id": 11,
+      "name": "\u4e2d\u4f4d\u5f3a\u5ea6 160\u2013255 \u00b7 \u96f6\u6563\u533a\u57df\u5408\u96c6",
+      "band": 2,
+      "median_range": [
+        160,
+        255
+      ],
+      "bricks": 5,
+      "selected_voxels": 6532,
+      "components": 5,
+      "pooled": true,
+      "density_bytes": 6532,
+      "index_bytes": 80,
+      "density_file": "group-11.raw",
+      "density_sha256": "5b3128b27b7a6d6c6a4fcd48711aaca22938abeed49029a9c1c5469c708d9519",
+      "index_file": "group-11-index.raw",
+      "index_sha256": "8e6ec4ec01228d1274ddaf5ceddb8c69543aa65dd83b5cd5e7c0aa8d74910ec3",
+      "bounds_xyz": {
+        "lo": [
+          144,
+          112,
+          0
+        ],
+        "hi": [
+          192,
+          160,
+          108
+        ]
+      }
+    }
+  ],
+  "group_edges": [
+    96,
+    160
+  ],
+  "group_components": 48,
+  "grouping": "Six-neighbor brick components with same selected-voxel median intensity band. Largest components separate; remainder explicitly pooled per band. Not anatomical labels or voxel SLIC.",
+  "group_ownership": "disjoint bricks; each payload stored once",
+  "group_index_bytes": 11808
+}

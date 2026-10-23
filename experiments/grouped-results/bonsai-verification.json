@@ -1,0 +1,12 @@
+{
+  "dataset": "bonsai",
+  "groups": 11,
+  "bricks": 1386,
+  "selected_voxels": 1868444,
+  "every_stored_voxel_exact": true,
+  "unique_brick_ownership": true,
+  "density_bytes": 1868444,
+  "mask_bytes": 883656,
+  "index_bytes": 22176,
+  "source_bytes": 16777216
+}

@@ -1,0 +1,12 @@
+{
+  "dataset": "kingsnake",
+  "groups": 12,
+  "bricks": 96573,
+  "selected_voxels": 363911442,
+  "every_stored_voxel_exact": true,
+  "unique_brick_ownership": true,
+  "density_bytes": 376348493,
+  "mask_bytes": 0,
+  "index_bytes": 1545168,
+  "source_bytes": 833617920
+}

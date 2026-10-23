@@ -1,0 +1,12 @@
+{
+  "dataset": "woodbranch",
+  "groups": 12,
+  "bricks": 367900,
+  "selected_voxels": 211046399,
+  "every_stored_voxel_exact": true,
+  "unique_brick_ownership": true,
+  "density_bytes": 422092798,
+  "mask_bytes": 326452312,
+  "index_bytes": 5886400,
+  "source_bytes": 17179869184
+}

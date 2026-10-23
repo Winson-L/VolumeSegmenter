@@ -1,0 +1,128 @@
+[
+  {
+    "dataset": "bonsai",
+    "source_bytes": 16777216,
+    "combined_storage_bytes": 2774276,
+    "gpu_texture_bytes": 2867201,
+    "reduction_percent": 83.46402645111084,
+    "original_gpu_median_ms": 3.414104,
+    "combined_gpu_median_ms": 3.230583,
+    "original_ms_by_view": [
+      3.37927,
+      3.414104,
+      3.6544999999999996
+    ],
+    "combined_ms_by_view": [
+      2.776687,
+      3.230583,
+      7.414437
+    ],
+    "framebuffer_exact": true,
+    "groups": 11,
+    "cutoff": 32,
+    "selected_voxels": 1868444,
+    "source_voxels": 16777216,
+    "encoding": "masked32",
+    "window_max": 255
+  },
+  {
+    "dataset": "foot",
+    "source_bytes": 16777216,
+    "combined_storage_bytes": 4273846,
+    "gpu_texture_bytes": 4341761,
+    "reduction_percent": 74.52589273452759,
+    "original_gpu_median_ms": 3.548562,
+    "combined_gpu_median_ms": 3.9907075,
+    "original_ms_by_view": [
+      3.548562,
+      3.4815205000000002,
+      3.706416
+    ],
+    "combined_ms_by_view": [
+      2.930291,
+      3.9907075,
+      4.006625
+    ],
+    "framebuffer_exact": true,
+    "groups": 12,
+    "cutoff": 32,
+    "selected_voxels": 2965254,
+    "source_voxels": 16777216,
+    "encoding": "masked32",
+    "window_max": 255
+  },
+  {
+    "dataset": "engine",
+    "source_bytes": 8388608,
+    "combined_storage_bytes": 1807103,
+    "gpu_texture_bytes": 1884161,
+    "reduction_percent": 78.45765352249146,
+    "original_gpu_median_ms": 1.9566455,
+    "combined_gpu_median_ms": 4.011125,
+    "original_ms_by_view": [
+      2.440645,
+      1.7594370000000001,
+      1.9566455
+    ],
+    "combined_ms_by_view": [
+      4.055375,
+      4.011125,
+      3.323937
+    ],
+    "framebuffer_exact": true,
+    "groups": 11,
+    "cutoff": 32,
+    "selected_voxels": 1311767,
+    "source_voxels": 8388608,
+    "encoding": "masked32",
+    "window_max": 255
+  },
+  {
+    "dataset": "kingsnake",
+    "source_bytes": 833617920,
+    "combined_storage_bytes": 377893661,
+    "gpu_texture_bytes": 379650057,
+    "reduction_percent": 54.66824165680124,
+    "original_gpu_median_ms": 8.4700205,
+    "combined_gpu_median_ms": 9.646833,
+    "original_ms_by_view": [
+      5.7859995,
+      11.8852285,
+      8.4700205
+    ],
+    "combined_ms_by_view": [
+      10.284687,
+      9.646833,
+      7.0433325
+    ],
+    "framebuffer_exact": true,
+    "groups": 12,
+    "cutoff": 40,
+    "selected_voxels": 363911442,
+    "source_voxels": 833617920,
+    "encoding": "dense-crops",
+    "window_max": 255
+  },
+  {
+    "dataset": "woodbranch",
+    "source_bytes": 17179869184,
+    "combined_storage_bytes": 754431510,
+    "gpu_texture_bytes": 782172161,
+    "reduction_percent": 95.60863064834848,
+    "original_gpu_median_ms": null,
+    "combined_gpu_median_ms": 11.7775,
+    "original_ms_by_view": [],
+    "combined_ms_by_view": [
+      8.357790999999999,
+      11.7775,
+      13.421479
+    ],
+    "framebuffer_exact": null,
+    "groups": 12,
+    "cutoff": 5000,
+    "selected_voxels": 211046399,
+    "source_voxels": 8589934592,
+    "encoding": "masked32",
+    "window_max": 57147
+  }
+]

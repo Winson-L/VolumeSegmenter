@@ -1,0 +1,12 @@
+{
+  "dataset": "foot",
+  "groups": 12,
+  "bricks": 1582,
+  "selected_voxels": 2965254,
+  "every_stored_voxel_exact": true,
+  "unique_brick_ownership": true,
+  "density_bytes": 2965254,
+  "mask_bytes": 1283280,
+  "index_bytes": 25312,
+  "source_bytes": 16777216
+}

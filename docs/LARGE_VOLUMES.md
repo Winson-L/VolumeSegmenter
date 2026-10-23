@@ -61,3 +61,32 @@ Open `compare_volumes.html?dataset=kingsnake` for full-resolution original versu
 Open `compare_volumes.html?dataset=woodbranch` for the [Kiln Gallery](https://kilnrender.com/gallery) Woodbranch DVR image beside the live full-resolution pipeline. Kingsnake also offers the Gallery's MIP image via the reference selector. Images load directly from the credited source; an offline or failed image load shows a source-link fallback. These are **external appearance references**, with different camera and transfer settings, not pixel-equality controls. Only interactive panels rotate; static references have no FPS or GPU-memory measurement.
 
 The attempted Woodbranch source scale-2 reference was rejected because decoded chunk size disagreed with metadata. No invalid low-resolution source is displayed. Lowering the display threshold below the export cutoff cannot restore omitted pipeline voxels.
+
+## Grouped experiments and shared transfer function
+
+The latest grouped comparison and raw measurements are in [grouped-results](../experiments/grouped-results/RESULTS.md). The viewer now offers Bonsai, Foot and Engine as well as Kingsnake and Woodbranch. Both interactive sides share three editable RGB/extinction control points; the static external reference cannot share those settings.
+
+Reproduce the three additional small examples (downloads, SHA-512 verification, threshold extraction, automatic dense/masked storage, grouping and exact reconstruction checks):
+
+```sh
+python prepare_examples.py
+```
+
+For the existing large sources, use fresh directories:
+
+```sh
+python group_large_volume.py experiments/large-volumes/kingsnake40 experiments/large-volumes/kingsnake-groups --edges 90 160
+python large_volume.py export --name woodbranch --cutoff 5000 --output experiments/large-volumes/woodbranch5000
+python verify_large_volume.py experiments/large-volumes/woodbranch5000
+python group_large_volume.py experiments/large-volumes/woodbranch5000 experiments/large-volumes/woodbranch-groups --edges 6000 9000
+python verify_large_groups.py experiments/large-volumes/kingsnake-groups experiments/large-volumes/kingsnake40
+python verify_large_groups.py experiments/large-volumes/woodbranch-groups experiments/large-volumes/woodbranch5000
+```
+
+The grouping operates on the graph of retained 16³ brick cells, with median-intensity bands and six-neighbor edges. It does not run full-volume SLIC or infer tissue identity. Individual groups are the nine largest brick-graph components; the remaining components are explicitly pooled by intensity band. No component is discarded during grouping. Every brick has one owner, so selections are disjoint and totals are additive without duplication. A logical AABB never allocates a parent dense volume.
+
+An automatic storage decision compares dense-crop bytes against packed selected samples plus an eight-byte prefix/occupancy record per 32 crop positions. Each record contains an absolute sample offset and a 32-bit occupancy mask; shader rank calculation restores exact within-crop coordinates. The page table still costs 16 bytes per full grid cell. No values are quantized or removed by mask packing.
+
+A group file contains samples, an optional mask and compact cell entries. The renderer concatenates only selected groups, remaps their offsets, and releases the previous GPU textures. CPU download/hash buffers are temporary, not part of the reported GPU figure. Large groups are fetched again when selected; this is not an LRU streaming cache. Selecting nothing retains the page table. The UI reports both combined file payload and actual allocated texture payload.
+
+The old >7000 Woodbranch run and its results remain historical baselines; the new grouped comparison uses >5000. That preserves more source voxels, but neither threshold has semantic validation. Raising display transparency cannot recover excluded source values.

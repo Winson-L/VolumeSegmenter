@@ -1,0 +1,20 @@
+[
+  {
+    "axis": 0,
+    "pixels": 1048576,
+    "changed_by_selection": 145176,
+    "target_vs_export_different_pixels": 0
+  },
+  {
+    "axis": 1,
+    "pixels": 814080,
+    "changed_by_selection": 225787,
+    "target_vs_export_different_pixels": 0
+  },
+  {
+    "axis": 2,
+    "pixels": 814080,
+    "changed_by_selection": 216427,
+    "target_vs_export_different_pixels": 0
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "dataset": "engine",
+  "groups": 11,
+  "bricks": 738,
+  "selected_voxels": 1311767,
+  "every_stored_voxel_exact": true,
+  "unique_brick_ownership": true,
+  "density_bytes": 1311767,
+  "mask_bytes": 483528,
+  "index_bytes": 11808,
+  "source_bytes": 8388608
+}

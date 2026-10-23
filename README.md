@@ -8,6 +8,10 @@ The current experiment asks:
 2. How do all-block and single-block rendering differ in GPU time and resident texture payload?
 3. Does hiding a block save memory, or must its texture be released?
 
+## Grouped examples and shared color controls
+
+The [comparison viewer](http://127.0.0.1:8765/compare_volumes.html?dataset=bonsai) now includes Bonsai, Foot, Engine, Kingsnake and Woodbranch, with shared color/opacity controls, selectable spatial/intensity groups, per-group file sizes and actual resident texture payload. See the [five-dataset size and GPU-time comparison](experiments/grouped-results/RESULTS.md) and [reproduction commands](docs/LARGE_VOLUMES.md). Grouping preserves selected samples exactly; threshold selection remains lossy.
+
 ## Large-volume experiment
 
 Bounded-memory preprocessing and compact integer textures now support full-resolution uint8/uint16 sources. See [reproduction and scope](docs/LARGE_VOLUMES.md) and [measurements](experiments/large-volume-results/RESULTS.md) for 795 MiB Kingsnake and 16 GiB Woodbranch. This path isolates explicit intensity selection; tiled SLIC and runtime residency streaming remain future work.
